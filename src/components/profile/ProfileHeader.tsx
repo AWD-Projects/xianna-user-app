@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CloseButton } from '@/components/ui/close-button'
-import { User, Edit3, LogOut } from 'lucide-react'
 import { LogoutButton } from './LogoutButton'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import type { User as AuthUser } from '@supabase/supabase-js'
 import type { UserProfile } from '@/types'
 
@@ -26,6 +26,15 @@ export function ProfileHeader({ user, profile }: ProfileHeaderProps) {
       <div className="relative">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-3">
+            <div className="flex items-center gap-4 mb-4">
+              <Image
+                src="/images/xianna.png"
+                alt="Xianna"
+                width={120}
+                height={36}
+                className="object-contain"
+              />
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-[#E61F93] rounded-full animate-pulse" />
               <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Perfil Personal</span>

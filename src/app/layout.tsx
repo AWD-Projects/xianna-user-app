@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     template: '%s | Xianna'
   },
   description: 'Xianna es tu guía en moda y estilo personal, celebrando la singularidad y el talento mexicano.',
+  icons: {
+    icon: '/images/x.png',
+    shortcut: '/images/x.png',
+    apple: '/images/x.png',
+  },
   keywords: ['moda', 'estilo', 'tendencias', 'looks', 'guardarropa', 'moda personalizada'],
   authors: [{ name: 'Xianna Team' }],
   creator: 'Xianna',
@@ -57,6 +62,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/images/x.png" />
+        <link rel="apple-touch-icon" href="/images/x.png" />
+      </head>
       <body className={inter.className}>
         <Providers>
           <div className="min-h-screen bg-gray-50">

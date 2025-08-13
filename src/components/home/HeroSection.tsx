@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Sparkles, Heart, Star } from 'lucide-react'
+import { ArrowRight, Sparkles, Star } from 'lucide-react'
+import Image from 'next/image'
 
 export function HeroSection() {
   const router = useRouter()
@@ -20,13 +21,15 @@ export function HeroSection() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Brand */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              XIANNA
-            </span>
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <Image
+              src="/images/xianna.png"
+              alt="Xianna"
+              width={200}
+              height={60}
+              className="object-contain"
+              priority
+            />
           </div>
 
           {/* Main Headline */}
@@ -48,7 +51,7 @@ export function HeroSection() {
             {[
             { icon: Star, text: "Estilo Personalizado" },
             { icon: Sparkles, text: "Expertos en Moda" },
-            { icon: Heart, text: "100% Mexicano" }
+            { icon: Star, text: "100% Mexicano" }
             ].map((benefit, index) => (
               <div 
                 key={index}

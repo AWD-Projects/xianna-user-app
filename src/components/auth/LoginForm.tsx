@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Eye, EyeOff } from 'lucide-react'
 import { loginUser } from '@/store/slices/authSlice'
 import type { AppDispatch, RootState } from '@/store'
 
@@ -20,6 +21,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const { error } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
@@ -59,12 +61,25 @@ export function LoginForm() {
       </div>
 
       <div>
-        <Input
-          type="password"
-          placeholder="Contraseña"
-          {...register('password')}
-          className={errors.password ? 'border-red-500' : ''}
-        />
+        <div className="relative">
+          <Input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Contraseña"
+            {...register('password')}
+            className={`pr-10 ${errors.password ? 'border-red-500' : ''}`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            {showPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+        </div>
         {errors.password && (
           <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
         )}

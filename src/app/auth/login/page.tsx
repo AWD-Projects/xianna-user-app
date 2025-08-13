@@ -14,13 +14,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-pink-500 rounded-2xl flex items-center justify-center mb-4">
+          <div className="mb-6">
             <Image
-              src="/images/logo.png"
+              src="/images/xianna.png"
               alt="Xianna"
-              width={32}
-              height={32}
-              className="object-contain"
+              width={160}
+              height={48}
+              className="object-contain mx-auto"
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Bienvenida de vuelta</h1>

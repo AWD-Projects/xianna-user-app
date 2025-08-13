@@ -35,16 +35,63 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/api') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
+  const pathname = request.nextUrl.pathname
+  const url = request.nextUrl.clone()
+
+  // Define public routes that don't require authentication
+  const publicRoutes = [
+    '/',
+    '/blog',
+    '/catalogo', 
+    '/contacto',
+    '/formulario'
+  ]
+
+  // Define auth routes
+  const authRoutes = ['/auth/login', '/auth/register']
+
+  // Define protected routes that require authentication
+  const protectedRoutes = ['/perfil', '/mis-outfits']
+
+  // Skip API routes and static files
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
+    return supabaseResponse
+  }
+
+  if (user) {
+    // User is authenticated
+    
+    // If user tries to access root (/), redirect to perfil
+    if (pathname === '/') {
+      url.pathname = '/perfil'
+      return NextResponse.redirect(url)
+    }
+    
+    // If user tries to access auth pages while logged in, redirect to perfil
+    if (authRoutes.includes(pathname)) {
+      url.pathname = '/perfil'
+      return NextResponse.redirect(url)
+    }
+    
+    // Allow access to all other routes when authenticated
+    return supabaseResponse
+    
+  } else {
+    // User is not authenticated
+    
+    // Allow access to public routes and auth routes
+    if (publicRoutes.includes(pathname) || authRoutes.includes(pathname)) {
+      return supabaseResponse
+    }
+    
+    // Redirect to login for protected routes
+    if (protectedRoutes.includes(pathname)) {
+      url.pathname = '/auth/login'
+      return NextResponse.redirect(url)
+    }
+    
+    // For any other route, allow access (fallback)
+    return supabaseResponse
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
@@ -59,6 +106,4 @@ export async function updateSession(request: NextRequest) {
   //    return myNewResponse
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
-
-  return supabaseResponse
 }
