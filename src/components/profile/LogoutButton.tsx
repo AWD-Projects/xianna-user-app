@@ -14,9 +14,12 @@ export function LogoutButton() {
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap()
-      router.push('/')
+      // Force a hard redirect to ensure server-side auth state is cleared
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout error:', error)
+      // If logout fails, still redirect to home
+      window.location.href = '/'
     }
   }
 
