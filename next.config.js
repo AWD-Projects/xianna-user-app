@@ -18,6 +18,16 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
+  // Remove standalone output for Netlify deployment
+  // output: 'standalone',
+  typescript: {
+    // Allow build to succeed even with type errors (optional)
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    // Allow build to succeed even with ESLint errors (optional)
+    ignoreDuringBuilds: false,
+  },
 }
 
 module.exports = nextConfig
