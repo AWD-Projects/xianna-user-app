@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Star, Users } from 'lucide-react'
@@ -10,12 +11,12 @@ interface BlogCardProps {
 }
 
 const categoryColors = [
-  'bg-pink-500',
-  'bg-blue-500', 
-  'bg-yellow-400',
-  'bg-purple-500',
-  'bg-green-500',
-  'bg-indigo-500'
+  'bg-[#E61F93]',
+  'bg-[#00D1ED]', 
+  'bg-[#FDE12D]',
+  'bg-[#E61F93]',
+  'bg-[#00D1ED]',
+  'bg-[#FDE12D]'
 ]
 
 export function BlogCard({ blog }: BlogCardProps) {
@@ -25,20 +26,23 @@ export function BlogCard({ blog }: BlogCardProps) {
     <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-200">
       <Link href={`/blog/${blog.id}`}>
         <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-          {/* Placeholder for image */}
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <span className="text-sm">Imagen del blog</span>
-          </div>
+          <Image
+            src={blog.image}
+            alt={blog.titulo}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          />
           
           <Badge 
-            className={`absolute top-3 left-3 text-white border-0 ${categoryColor}`}
+            className={`absolute top-3 left-3 text-white border-0 ${categoryColor} z-10`}
           >
             {blog.categoria}
           </Badge>
         </div>
         
         <CardContent className="p-4">
-          <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-pink-600 transition-colors">
+          <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-[#E61F93] transition-colors">
             {blog.titulo}
           </h3>
           
@@ -59,7 +63,7 @@ export function BlogCard({ blog }: BlogCardProps) {
               </div>
             </div>
             
-            <span className="text-pink-500 font-medium">
+            <span className="text-[#E61F93] font-medium">
               Leer más →
             </span>
           </div>

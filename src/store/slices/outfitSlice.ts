@@ -133,12 +133,15 @@ export const fetchOutfits = createAsyncThunk(
         if (!hasMatchingOccasion) continue // Skip this outfit instead of returning null
       }
 
+      // Debug log to see the data structure
+      console.log('Catalog outfit estilos data:', outfit.estilos)
+      
       outfitsWithDetails.push({
         id: outfit.id,
         nombre: outfit.nombre,
         descripcion: outfit.descripcion,
         id_estilo: outfit.id_estilo,
-        estilo: outfit.estilos?.[0]?.tipo || 'Sin estilo',
+        estilo: (outfit.estilos as any)?.tipo || 'Sin estilo', // estilos can be object or array
         imagen: imageUrl,
         ocasiones,
         favoritos: favoritesCount || 0,

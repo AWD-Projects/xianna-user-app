@@ -18,25 +18,30 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ user, profile }: ProfileHeaderProps) {
   const router = useRouter()
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-pink-500 rounded-2xl flex items-center justify-center">
-          <User className="w-8 h-8 text-white" />
-        </div>
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
-          <p className="text-gray-600 text-lg">
-            Gestiona tu información personal y preferencias de estilo
-          </p>
-        </div>
-      </div>
+    <div className="relative mb-12">
+      {/* Decorative elements */}
+      <div className="absolute -top-6 -left-6 w-20 h-20 bg-[#E61F93]/20 rounded-full blur-2xl animate-pulse" />
+      <div className="absolute -top-4 -right-8 w-16 h-16 bg-[#00D1ED]/20 rounded-full blur-xl animate-pulse delay-1000" />
       
-      <div className="flex gap-3">
-        <LogoutButton />
-        <CloseButton 
-          onClick={() => router.push('/')}
-          size="lg"
-        />
+      <div className="relative">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-[#E61F93] rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Perfil Personal</span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+              ¡Hola, <span className="text-[#E61F93]">{profile?.nombre || user.email?.split('@')[0]}</span>!
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl">
+              Tu espacio personal donde puedes gestionar tu información y preferencias de estilo
+            </p>
+          </div>
+          
+          <div className="flex gap-3">
+            <LogoutButton />
+          </div>
+        </div>
       </div>
     </div>
   )

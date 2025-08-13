@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  ArrowRight, 
   Sparkles, 
   Heart, 
   User, 
@@ -15,7 +15,10 @@ import {
   ShoppingBag,
   Crown,
   TrendingUp,
-  Clock
+  Zap,
+  ChevronRight,
+  Award,
+  Target
 } from 'lucide-react'
 
 interface MainGridLoggedProps {
@@ -41,214 +44,265 @@ const getStyleName = (styleId: number) => {
 }
 
 export function MainGridLogged({ userName, userStyleId }: MainGridLoggedProps) {
+  const router = useRouter()
   const styleName = getStyleName(userStyleId)
   const hasCompletedQuestionnaire = userStyleId > 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pink-50">
-      {/* Header Section */}
-      <div className="container mx-auto px-4 pt-8 pb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              ¡Hola, <span className="text-pink-600">{userName}</span>!
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Bienvenida a tu espacio personal de estilo
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-rose-50/30">
+      {/* Enhanced Header with Animation */}
+      <div className="container mx-auto px-4 pt-12 pb-8">
+        <div className="relative">
+          {/* Decorative elements */}
+          <div className="absolute -top-6 -left-6 w-20 h-20 bg-[#E61F93]/20 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute -top-4 -right-8 w-16 h-16 bg-[#00D1ED]/20 rounded-full blur-xl animate-pulse delay-1000" />
           
-          {hasCompletedQuestionnaire && (
-            <Badge className="bg-pink-500 text-white border-0 px-4 py-2 text-sm font-medium">
-              <Crown className="w-4 h-4 mr-2" />
-              Estilo {styleName}
-            </Badge>
-          )}
+          <div className="relative">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-[#E61F93] rounded-full animate-pulse" />
+                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Panel Personal</span>
+                </div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                  ¡Hola, <span className="text-[#E61F93]">{userName}</span>!
+                </h1>
+                <p className="text-xl text-gray-600 max-w-2xl">
+                  Tu espacio personal para descubrir y crear looks únicos que reflejen tu personalidad
+                </p>
+              </div>
+              
+              {hasCompletedQuestionnaire && (
+                <div className="flex items-center gap-4">
+                  <Badge className="bg-[#E61F93] text-white border-0 px-6 py-3 text-base font-semibold rounded-2xl">
+                    <Crown className="w-5 h-5 mr-2" />
+                    Estilo {styleName}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="container mx-auto px-4 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {/* Enhanced Main Content */}
+      <div className="container mx-auto px-4 pb-12">
+        {/* Hero Section with Better Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           
-          {/* Hero Card - Perfil */}
-          <Card className="lg:col-span-2 overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 text-white p-8 relative overflow-hidden">
-                {/* Background decoration */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full" />
-                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                      <User className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold">Mi Perfil</h2>
-                      <p className="text-pink-100 text-sm">Información personal y estilo</p>
-                    </div>
-                  </div>
-
-                  {hasCompletedQuestionnaire ? (
-                    <div className="space-y-4">
-                      <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Palette className="w-5 h-5 text-yellow-300" />
-                          <span className="font-semibold">Tu estilo: {styleName}</span>
-                        </div>
-                        <p className="text-pink-100 text-sm">
-                          Perfil completo • Outfits personalizados disponibles
-                        </p>
-                      </div>
-                      
-                      <div className="flex gap-3 pt-2">
-                        <Button asChild className="bg-white text-pink-600 hover:bg-pink-50 rounded-xl border-0">
-                          <Link href="/perfil">
-                            Ver detalles
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="bg-yellow-400/20 backdrop-blur-sm rounded-2xl p-4 border border-yellow-300/30">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Clock className="w-5 h-5 text-yellow-300" />
-                          <span className="font-semibold">Perfil incompleto</span>
-                        </div>
-                        <p className="text-pink-100 text-sm">
-                          Completa el cuestionario para descubrir tu estilo único
-                        </p>
-                      </div>
-                      
-                      <Button asChild className="bg-yellow-400 text-gray-900 hover:bg-yellow-300 rounded-xl border-0 font-semibold">
-                        <Link href="/formulario">
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Completar cuestionario
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
+          {/* Profile Card - Non-clickable, using brand colors */}
+          <Card className="lg:col-span-2">
+            <CardContent className="p-8">
+              {/* Header Section */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-[#E61F93]/10 rounded-2xl flex items-center justify-center">
+                  <User className="w-8 h-8 text-[#E61F93]" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    Mi Perfil
+                  </h2>
+                  <p className="text-gray-600">Tu identidad de estilo personal</p>
                 </div>
               </div>
+
+              {hasCompletedQuestionnaire ? (
+                <div className="space-y-6">
+                  {/* Style Status */}
+                  <div className="bg-[#00D1ED]/5 border border-[#00D1ED]/20 rounded-xl p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-[#00D1ED]/10 rounded-xl flex items-center justify-center">
+                        <Palette className="w-5 h-5 text-[#00D1ED]" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900">Estilo {styleName}</h3>
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-[#00D1ED]" />
+                          <span className="text-[#00D1ED] text-sm font-medium">Perfil verificado</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600">
+                      Tu perfil está completo y personalizado. Explora outfits diseñados especialmente para tu estilo.
+                    </p>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <Button 
+                      className="bg-[#E61F93] hover:bg-[#E61F93]/90 text-white rounded-xl font-medium"
+                      onClick={() => router.push('/perfil')}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Ver perfil completo
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Incomplete Status */}
+                  <div className="bg-[#FDE12D]/5 border border-[#FDE12D]/30 rounded-xl p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-[#FDE12D]/20 rounded-xl flex items-center justify-center">
+                        <Target className="w-5 h-5 text-[#FDE12D]" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900">¡Descubre tu estilo!</h3>
+                        <p className="text-[#FDE12D]/80 text-sm">Solo unos minutos para personalizar tu experiencia</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-600">
+                      Completa nuestro cuestionario personalizado y descubre outfits únicos creados especialmente para ti.
+                    </p>
+                  </div>
+                  
+                  {/* Call to Action */}
+                  <Button 
+                    className="bg-[#FDE12D] hover:bg-[#FDE12D]/90 text-gray-900 rounded-xl font-bold px-6 py-3 w-full text-base"
+                    onClick={() => router.push('/formulario')}
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Comenzar cuestionario
+                    <Zap className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Quick Stats */}
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <CardContent className="p-6">
+          {/* Stats Card - Non-clickable */}
+          <Card>
+            <CardContent className="p-8">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Tu Progreso</h3>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Perfil:</span>
-                    <span className={hasCompletedQuestionnaire ? 'text-green-600 font-medium' : 'text-orange-500'}>
-                      {hasCompletedQuestionnaire ? 'Completo' : 'Pendiente'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Outfits guardados:</span>
-                    <span className="font-medium">0</span>
+                <div className="relative w-20 h-20 bg-[#00D1ED]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-10 h-10 text-[#00D1ED]" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#E61F93] rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">✓</span>
                   </div>
                 </div>
-               
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Tu Progreso</h3>
+                
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-medium">Perfil:</span>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${hasCompletedQuestionnaire ? 'bg-[#00D1ED]' : 'bg-[#FDE12D]'}`} />
+                        <span className={`font-bold ${hasCompletedQuestionnaire ? 'text-[#00D1ED]' : 'text-[#FDE12D]'}`}>
+                          {hasCompletedQuestionnaire ? 'Completo' : 'Pendiente'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  
+                  <div className="bg-[#FDE12D]/10 rounded-2xl p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-medium">Actividad:</span>
+                      <span className="font-bold text-[#FDE12D]">Nueva</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Action Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Enhanced Action Cards with Better Grid */}
+        <div>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-1 h-8 bg-[#E61F93] rounded-full" />
+            <h2 className="text-2xl font-bold text-gray-900">Explora Xianna</h2>
+          </div>
           
-          {/* Mis Outfits Favoritos */}
-          <Card className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-            <Link href="/mis-outfits">
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Heart className="w-7 h-7 text-pink-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-pink-600 transition-colors">
-                  Mis Favoritos
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Outfits que has guardado
-                </p>
-                <div className="flex items-center justify-center text-pink-500 font-medium text-sm group-hover:translate-x-1 transition-transform">
-                  Ver colección
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* Favorites Card */}
+            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">
+              <Link href="/mis-outfits">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-[#E61F93]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Heart className="w-8 h-8 text-[#E61F93]" />
+                  </div>
+                  <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#E61F93] transition-colors">
+                    Mis Favoritos
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Tu colección personal de outfits guardados
+                  </p>
+                  <div className="flex items-center justify-center text-[#E61F93] font-semibold">
+                    Explorar colección
+                    <ChevronRight className="w-5 h-5 ml-1" />
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
 
-          {/* Catálogo */}
-          <Card className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-            <Link href="/catalogo">
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="w-7 h-7 text-purple-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                  Catálogo
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Explora nuevos outfits
-                </p>
-                <div className="flex items-center justify-center text-purple-500 font-medium text-sm group-hover:translate-x-1 transition-transform">
-                  Explorar
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
+            {/* Catalog Card */}
+            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">
+              <Link href="/catalogo">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-[#00D1ED]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <ShoppingBag className="w-8 h-8 text-[#00D1ED]" />
+                  </div>
+                  <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#00D1ED] transition-colors">
+                    Catálogo
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Miles de outfits únicos esperándote
+                  </p>
+                  <div className="flex items-center justify-center text-[#00D1ED] font-semibold">
+                    Descubrir looks
+                    <ChevronRight className="w-5 h-5 ml-1" />
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
 
-          {/* Blog */}
-          <Card className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-            <Link href="/blog">
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Book className="w-7 h-7 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  Blog
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  Consejos y tendencias
-                </p>
-                <div className="flex items-center justify-center text-blue-500 font-medium text-sm group-hover:translate-x-1 transition-transform">
-                  Leer artículos
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
+            {/* Blog Card */}
+            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">
+              <Link href="/blog">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-[#FDE12D]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Book className="w-8 h-8 text-[#FDE12D]" />
+                  </div>
+                  <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#FDE12D] transition-colors">
+                    Blog & Tips
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Consejos, tendencias y guías de estilo
+                  </p>
+                  <div className="flex items-center justify-center text-[#FDE12D] font-semibold">
+                    Leer artículos
+                    <ChevronRight className="w-5 h-5 ml-1" />
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
 
-          {/* Cuestionario/Estilo */}
-          <Card className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-            <Link href="/formulario">
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Star className="w-7 h-7 text-yellow-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-yellow-600 transition-colors">
-                  {hasCompletedQuestionnaire ? 'Actualizar' : 'Descubrir'}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  {hasCompletedQuestionnaire ? 'Refina tu estilo' : 'Tu estilo único'}
-                </p>
-                <div className="flex items-center justify-center text-yellow-600 font-medium text-sm group-hover:translate-x-1 transition-transform">
-                  {hasCompletedQuestionnaire ? 'Actualizar' : 'Comenzar'}
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </div>
-              </CardContent>
-            </Link>
-          </Card>
+            {/* Style Discovery Card */}
+            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">
+              <Link href="/formulario">
+                <CardContent className="p-8 text-center">
+                  <div className="w-16 h-16 bg-[#E61F93]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Star className="w-8 h-8 text-[#E61F93]" />
+                  </div>
+                  <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#E61F93] transition-colors">
+                    {hasCompletedQuestionnaire ? 'Actualizar Estilo' : 'Descubrir Estilo'}
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {hasCompletedQuestionnaire ? 'Refina y actualiza tus preferencias' : 'Encuentra tu identidad de estilo única'}
+                  </p>
+                  <div className="flex items-center justify-center text-[#E61F93] font-semibold">
+                    {hasCompletedQuestionnaire ? 'Actualizar' : 'Comenzar'}
+                    <ChevronRight className="w-5 h-5 ml-1" />
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

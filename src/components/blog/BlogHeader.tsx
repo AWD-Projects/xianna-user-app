@@ -10,9 +10,6 @@ export function BlogHeader() {
   return (
     <div className="flex items-center justify-between mb-12">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center">
-          <BookOpen className="w-6 h-6 text-white" />
-        </div>
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Blog Xianna</h1>
           <p className="text-gray-600 text-lg">
@@ -21,7 +18,7 @@ export function BlogHeader() {
         </div>
       </div>
       <CloseButton 
-        onClick={() => router.back()}
+        onClick={() => router.push('/perfil')}
         size="lg"
       />
     </div>)

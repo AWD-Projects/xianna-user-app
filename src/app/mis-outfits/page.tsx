@@ -34,17 +34,49 @@ async function getUserFavorites() {
     `)
     .eq('usuario', user.email)
 
-  // Transform the data to match the expected interface
-  const favorites = rawFavorites?.map((favorite: any) => ({
-    outfit: favorite.outfit,
-    outfits: favorite.outfits ? {
-      id: favorite.outfits.id,
-      nombre: favorite.outfits.nombre,
-      descripcion: favorite.outfits.descripcion,
-      estilos: favorite.outfits.estilos?.[0] || null,
-      outfit_ocasion: favorite.outfits.outfit_ocasion || []
-    } : null
-  })) || []
+  // Transform the data and fetch images
+  const favorites = []
+  
+  for (const favorite of rawFavorites || []) {
+    if (!favorite.outfits) continue
+    
+    // Type assertion for the outfit data
+    const outfit = favorite.outfits as any
+    
+    // Get outfit image from storage
+    let imageUrl = '/placeholder-outfit.jpg'
+    
+    try {
+      const { data: files } = await supabase.storage
+        .from('Outfits')
+        .list(`uploads/${outfit.id}/imagen_principal`, { limit: 1 })
+
+      if (files && files.length > 0) {
+        imageUrl = supabase.storage
+          .from('Outfits')
+          .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${files[0].name}`)
+          .data.publicUrl
+      }
+    } catch (error) {
+      console.warn(`Error loading image for outfit ${outfit.id}:`, error)
+    }
+    
+    // Debug log to see the data structure
+    console.log('Favorite outfit estilos data:', outfit.estilos)
+    
+    favorites.push({
+      outfit: favorite.outfit,
+      outfits: {
+        id: outfit.id,
+        nombre: outfit.nombre,
+        descripcion: outfit.descripcion,
+        estilo: outfit.estilos?.tipo || 'Sin estilo', // estilos is an object, not array
+        estilos: outfit.estilos || null,
+        outfit_ocasion: outfit.outfit_ocasion || [],
+        imagen: imageUrl
+      }
+    })
+  }
 
   return { favorites }
 }

@@ -36,7 +36,7 @@ export function LoginForm() {
     setIsLoading(true)
     try {
       await dispatch(loginUser(data)).unwrap()
-      router.push('/inicio')
+      router.push('/perfil')
     } catch (error) {
       console.error('Login error:', error)
     } finally {

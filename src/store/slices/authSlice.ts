@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { createClient } from '@/lib/supabase/client'
+import { translateAuthError } from '@/lib/error-translation'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthState {
@@ -101,7 +102,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.error.message || 'Error al iniciar sesión'
+        state.error = translateAuthError(action.error)
       })
       // Signup
       .addCase(signupUser.pending, (state) => {
@@ -114,7 +115,7 @@ const authSlice = createSlice({
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.loading = false
-        state.error = action.error.message || 'Error al registrarse'
+        state.error = translateAuthError(action.error)
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {

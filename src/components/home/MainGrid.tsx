@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,6 +67,7 @@ function CTAArrow() {
 /* ---------- Page ---------- */
 
 export function MainGrid(): JSX.Element {
+  const router = useRouter()
   return (
     <div className="h-screen w-full max-w-7xl mx-auto p-4 grid gap-4 grid-cols-12 grid-rows-6 overflow-hidden">
       {/* HERO — 8x4 */}
@@ -105,21 +107,19 @@ export function MainGrid(): JSX.Element {
 
           <div className="mt-auto flex flex-wrap gap-3">
             <Button
-              asChild
               className="bg-white text-pink-700 hover:bg-white/90 border-0 rounded-xl h-10 px-6 shadow-sm focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => router.push('/auth/register')}
             >
-              <Link href="/auth/register">
-                Comenzar ahora
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
+              Comenzar ahora
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
 
             <Button
               variant="outline"
-              asChild
               className="border-white/30 text-white hover:bg-white/10 rounded-xl h-10 px-6 focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => router.push('/blog')}
             >
-              <Link href="/blog">Explorar blog</Link>
+              Explorar blog
             </Button>
           </div>
         </div>
@@ -242,11 +242,14 @@ export function MainGrid(): JSX.Element {
               <span className="text-sm">@xianna.mx</span>
             </Link>
 
-            <Button className="bg-pink-500 hover:bg-pink-600 border-0 rounded-xl h-9 px-4">
-              <Link href="/auth/register" className="inline-flex items-center gap-2">
+            <Button 
+              className="bg-pink-500 hover:bg-pink-600 border-0 rounded-xl h-9 px-4"
+              onClick={() => router.push('/auth/register')}
+            >
+              <span className="inline-flex items-center gap-2">
                 Comenzar
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </span>
             </Button>
           </div>
         </div>

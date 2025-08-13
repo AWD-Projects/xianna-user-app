@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, ExternalLink, Star } from 'lucide-react'
+import { Heart, Eye, Star } from 'lucide-react'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
 import type { Outfit } from '@/types'
 import type { AppDispatch, RootState } from '@/store'
@@ -48,8 +48,28 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
   }
 
   return (
-    <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105">
-      <Link href={`/catalogo/${outfit.id}`}>
+    <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative">
+      {/* Heart Button Over Image */}
+      {user && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md ${
+            isFavorited 
+              ? 'bg-[#E61F93] text-white hover:bg-[#E61F93]/90' 
+              : 'bg-white/90 text-gray-600 hover:bg-white backdrop-blur-sm'
+          }`}
+          onClick={handleToggleFavorite}
+          disabled={isToggling}
+        >
+          <Heart 
+            className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} 
+          />
+        </Button>
+      )}
+      
+      {/* Clickable Image Section */}
+      <Link href={`/catalogo/${outfit.id}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
           {/* Outfit Image */}
           {!imageError && outfit.imagen && outfit.imagen !== '/placeholder-outfit.jpg' && outfit.imagen.trim() !== '' ? (
@@ -63,9 +83,9 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
               priority={false}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gradient-to-br from-pink-50 to-purple-50">
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-3">
-                <Star className="w-8 h-8 text-pink-400" />
+            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100">
+              <div className="w-16 h-16 bg-[#E61F93]/10 rounded-full flex items-center justify-center mb-3">
+                <Star className="w-8 h-8 text-[#E61F93]" />
               </div>
               <span className="text-sm font-medium text-gray-600">{outfit.nombre}</span>
               <span className="text-xs text-gray-400 mt-1">
@@ -73,53 +93,38 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
               </span>
             </div>
           )}
-          
-          {/* Favorite button - only show if user is logged in */}
-          {user && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`absolute top-3 right-3 rounded-full transition-all duration-200 ${
-                isFavorited 
-                  ? 'bg-pink-500 text-white hover:bg-pink-600' 
-                  : 'bg-white/80 text-gray-600 hover:bg-white'
-              }`}
-              onClick={handleToggleFavorite}
-              disabled={isToggling}
-            >
-              <Heart 
-                className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} 
-              />
-            </Button>
-          )}
 
           {/* Style badge */}
-          <Badge className="absolute top-3 left-3 bg-pink-500 text-white border-0">
+          <Badge className="absolute top-3 left-3 bg-[#E61F93] text-white border-0 shadow-md">
             {outfit.estilo || 'Sin estilo'}
           </Badge>
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-          
-          {/* View button */}
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button size="icon" className="bg-white text-gray-900 hover:bg-gray-100 rounded-full">
-              <ExternalLink className="w-4 h-4" />
-            </Button>
+          {/* Hover overlay with view indicator */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                <Eye className="w-6 h-6 text-gray-800" />
+              </div>
+            </div>
           </div>
         </div>
-        
-        <CardContent className="p-6">
-          <h3 className="font-bold text-lg mb-2 group-hover:text-pink-600 transition-colors line-clamp-1">
-            {outfit.nombre}
-          </h3>
-          
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {outfit.descripcion}
-          </p>
+      </Link>
+      
+      {/* Content Section - Non-clickable */}
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          {/* Title and Description */}
+          <div>
+            <h3 className="font-bold text-lg mb-1 line-clamp-1 text-gray-900">
+              {outfit.nombre}
+            </h3>
+            <p className="text-gray-600 text-sm line-clamp-2">
+              {outfit.descripcion}
+            </p>
+          </div>
           
           {/* Occasions */}
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1">
             {outfit.ocasiones.slice(0, 2).map((ocasion, index) => (
               <Badge 
                 key={index} 
@@ -136,19 +141,15 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
             )}
           </div>
           
-          {/* Stats */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-1 text-gray-500">
+          {/* Bottom row with favorites count and action */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-sm text-gray-500">
               <Heart className="w-4 h-4" />
               <span>{outfit.favoritos}</span>
             </div>
-            
-            <span className="text-pink-500 font-medium group-hover:text-pink-600">
-              Ver detalles →
-            </span>
           </div>
-        </CardContent>
-      </Link>
+        </div>
+      </CardContent>
     </Card>
   )
 }

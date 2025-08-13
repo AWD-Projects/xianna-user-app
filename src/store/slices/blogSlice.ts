@@ -42,8 +42,8 @@ export const fetchBlogs = createAsyncThunk(
         descripcion,
         contenido,
         id_categoria,
-        categoria_blog!inner(categoria),
-      `)
+        categoria_blog!inner(categoria)
+      `, { count: 'exact' })
       .order('id', { ascending: false })
 
     if (category && category !== 'Todo') {
@@ -59,13 +59,18 @@ export const fetchBlogs = createAsyncThunk(
     const blogsWithDetails = await Promise.all(
       (data || []).map(async (blog: any) => {
         // Get blog image
-        const { data: files } = await supabase.storage
+        const { data: files, error: filesError } = await supabase.storage
           .from('Blogs')
           .list(`uploads/${blog.id}`, { limit: 1 })
 
-        const imageUrl = files && files.length > 0
-          ? supabase.storage.from('Blogs').getPublicUrl(`uploads/${blog.id}/${files[0].name}`).data.publicUrl
-          : '/placeholder-blog.jpg'
+        let imageUrl = '/placeholder-blog.jpg'
+        
+        if (files && files.length > 0 && !filesError) {
+          const { data: urlData } = supabase.storage
+            .from('Blogs')
+            .getPublicUrl(`uploads/${blog.id}/${files[0].name}`)
+          imageUrl = urlData.publicUrl
+        }
 
         // Get ratings
         const { data: ratingsData } = await supabase
@@ -114,13 +119,18 @@ export const fetchBlogById = createAsyncThunk(
     if (error) throw error
 
     // Get blog image
-    const { data: files } = await supabase.storage
+    const { data: files, error: filesError } = await supabase.storage
       .from('Blogs')
       .list(`uploads/${data.id}`, { limit: 1 })
 
-    const imageUrl = files && files.length > 0
-      ? supabase.storage.from('Blogs').getPublicUrl(`uploads/${data.id}/${files[0].name}`).data.publicUrl
-      : '/placeholder-blog.jpg'
+    let imageUrl = '/placeholder-blog.jpg'
+    
+    if (files && files.length > 0 && !filesError) {
+      const { data: urlData } = supabase.storage
+        .from('Blogs')
+        .getPublicUrl(`uploads/${data.id}/${files[0].name}`)
+      imageUrl = urlData.publicUrl
+    }
 
     // Get ratings
     const { data: ratingsData } = await supabase

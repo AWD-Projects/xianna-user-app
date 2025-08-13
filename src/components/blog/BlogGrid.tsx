@@ -55,7 +55,7 @@ export function BlogGrid({ category, page }: BlogGridProps) {
         <BlogPagination 
           currentPage={pagination.page}
           totalPages={pagination.totalPages}
-          category={category}
+          totalBlogs={pagination.totalBlogs}
         />
       )}
     </div>

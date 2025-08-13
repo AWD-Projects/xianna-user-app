@@ -9,9 +9,6 @@ export function CatalogHeader() {
   return (
     <div className="flex items-center justify-between mb-12">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center">
-          <Shirt className="w-6 h-6 text-white" />
-        </div>
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Catálogo de Outfits</h1>
           <p className="text-gray-600 text-lg">
@@ -20,8 +17,8 @@ export function CatalogHeader() {
         </div>
       </div>
 
-      <CloseButton 
-        onClick={() => router.back()}
+      <CloseButton
+        onClick={() => router.push('/perfil')}
         size="lg"
       />
     </div>

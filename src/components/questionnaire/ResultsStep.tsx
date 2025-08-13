@@ -110,10 +110,10 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
           y recibir recomendaciones basadas en tu estilo único.
         </p>
         <Button 
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/perfil')}
           className="bg-pink-500 hover:bg-pink-600 rounded-xl px-8"
         >
-          Volver al inicio
+          Ir a mi perfil
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>

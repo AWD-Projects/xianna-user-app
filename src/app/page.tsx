@@ -28,9 +28,9 @@ async function getUser() {
 export default async function HomePage() {
   const userData = await getUser()
 
-  // Si el usuario está logueado, redirigir al inicio personalizado
+  // Si el usuario está logueado, redirigir al perfil personalizado
   if (userData) {
-    redirect('/inicio')
+    redirect('/perfil')
   }
 
   return (

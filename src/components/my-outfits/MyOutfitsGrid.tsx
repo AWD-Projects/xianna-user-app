@@ -1,8 +1,16 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useSelector, useDispatch } from 'react-redux'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, ExternalLink, Sparkles } from 'lucide-react'
+import { Heart, Eye, Sparkles, Star } from 'lucide-react'
+import { toggleFavorite } from '@/store/slices/outfitSlice'
+import type { AppDispatch, RootState } from '@/store'
 
 interface FavoriteOutfit {
   outfit: number
@@ -10,10 +18,12 @@ interface FavoriteOutfit {
     id: number
     nombre: string
     descripcion: string
+    estilo: string
     estilos: { tipo: string } | null
     outfit_ocasion: Array<{
       ocasion: { ocasion: string }
     }>
+    imagen: string
   } | null
 }
 
@@ -22,11 +32,16 @@ interface MyOutfitsGridProps {
 }
 
 export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
+  const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
+  const { user } = useSelector((state: RootState) => state.auth)
+  const { favorites: currentFavorites } = useSelector((state: RootState) => state.outfit)
+  
   if (favorites.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Heart className="w-12 h-12 text-purple-500" />
+        <div className="w-24 h-24 bg-[#E61F93]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Heart className="w-12 h-12 text-[#E61F93]" />
         </div>
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
           Aún no tienes outfits favoritos
@@ -35,11 +50,12 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
           Explora nuestro catálogo y guarda los outfits que más te gusten 
           para encontrarlos fácilmente aquí.
         </p>
-        <Button asChild className="bg-purple-500 hover:bg-purple-600 rounded-xl px-8">
-          <Link href="/catalogo">
-            Explorar catálogo
-            <Sparkles className="w-4 h-4 ml-2" />
-          </Link>
+        <Button 
+          className="bg-[#E61F93] hover:bg-[#E61F93]/90 rounded-xl px-8"
+          onClick={() => router.push('/catalogo')}
+        >
+          Explorar catálogo
+          <Sparkles className="w-4 h-4 ml-2" />
         </Button>
       </div>
     )
@@ -51,77 +67,125 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
         .filter((favorite) => favorite.outfits !== null)
         .map((favorite) => {
           const outfit = favorite.outfits!
+          const [isToggling, setIsToggling] = useState(false)
+          const [imageError, setImageError] = useState(false)
           
           const ocasiones = outfit.outfit_ocasion?.map(o => o.ocasion.ocasion) || []
-          const estiloTipo = outfit.estilos?.tipo || 'Sin estilo'
+          const isFavorited = currentFavorites.includes(outfit.id)
+          
+          const handleToggleFavorite = async (e: React.MouseEvent) => {
+            e.preventDefault()
+            e.stopPropagation()
+            
+            if (!user?.email || isToggling) return
+            
+            setIsToggling(true)
+            try {
+              await dispatch(toggleFavorite({ 
+                userEmail: user.email, 
+                outfitId: outfit.id 
+              })).unwrap()
+            } catch (error) {
+              console.error('Error toggling favorite:', error)
+            } finally {
+              setIsToggling(false)
+            }
+          }
           
           return (
-            <Card key={outfit.id} className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105">
-              <Link href={`/catalogo/${outfit.id}`}>
-                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
-                  {/* Placeholder for outfit image */}
-                  <div className="w-full h-full flex items-center justify-center text-purple-600">
-                    <span className="text-sm font-medium">Outfit {outfit.nombre}</span>
-                  </div>
-                  
-                  {/* Favorite badge */}
-                  <div className="absolute top-3 right-3">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                      <Heart className="w-4 h-4 text-white fill-current" />
+            <Card key={outfit.id} className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative">
+              {/* Heart Button Over Image - For Removing from Favorites */}
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md bg-[#E61F93] text-white hover:bg-red-500"
+                  onClick={handleToggleFavorite}
+                  disabled={isToggling}
+                  title="Remover de favoritos"
+                >
+                  {isToggling ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Heart className="w-4 h-4 fill-current" />
+                  )}
+                </Button>
+              )}
+              
+              {/* Clickable Image Section */}
+              <Link href={`/catalogo/${outfit.id}`} className="block">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                  {/* Outfit Image */}
+                  {!imageError && outfit.imagen && outfit.imagen !== '/placeholder-outfit.jpg' && outfit.imagen.trim() !== '' ? (
+                    <Image
+                      src={outfit.imagen}
+                      alt={outfit.nombre}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={() => setImageError(true)}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      priority={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100">
+                      <div className="w-16 h-16 bg-[#E61F93]/10 rounded-full flex items-center justify-center mb-3">
+                        <Star className="w-8 h-8 text-[#E61F93]" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-600">{outfit.nombre}</span>
+                      <span className="text-xs text-gray-400 mt-1">
+                        {imageError ? 'Error al cargar imagen' : 'Imagen no disponible'}
+                      </span>
                     </div>
-                  </div>
+                  )}
 
                   {/* Style badge */}
-                  <Badge className="absolute top-3 left-3 bg-purple-500 text-white border-0">
-                    {estiloTipo}
+                  <Badge className="absolute top-3 left-3 bg-[#E61F93] text-white border-0 shadow-md">
+                    {outfit.estilo || 'Sin estilo'}
                   </Badge>
 
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-                  
-                  {/* View button */}
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button size="icon" className="bg-white text-gray-900 hover:bg-gray-100 rounded-full">
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
+                  {/* Hover overlay with view indicator */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                        <Eye className="w-6 h-6 text-gray-800" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-2 group-hover:text-purple-600 transition-colors line-clamp-1">
-                    {outfit.nombre}
-                  </h3>
-                  
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {outfit.descripcion}
-                  </p>
+              </Link>
+              
+              {/* Content Section - Non-clickable */}
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Title and Description */}
+                  <div>
+                    <h3 className="font-bold text-lg mb-1 line-clamp-1 text-gray-900">
+                      {outfit.nombre}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-2">
+                      {outfit.descripcion}
+                    </p>
+                  </div>
                   
                   {/* Occasions */}
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="flex flex-wrap gap-1">
                     {ocasiones.slice(0, 2).map((ocasion, index) => (
                       <Badge 
                         key={index} 
                         variant="outline" 
-                        className="text-xs border-purple-200 text-purple-600"
+                        className="text-xs border-gray-200 text-gray-600"
                       >
                         {ocasion}
                       </Badge>
                     ))}
                     {ocasiones.length > 2 && (
-                      <Badge variant="outline" className="text-xs border-purple-200 text-purple-600">
+                      <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
                         +{ocasiones.length - 2}
                       </Badge>
                     )}
                   </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-purple-500 font-medium">Guardado</span>
-                    <span className="text-purple-500 font-medium group-hover:text-purple-600">
-                      Ver detalles →
-                    </span>
-                  </div>
-                </CardContent>
-              </Link>
+                </div>
+              </CardContent>
             </Card>
           )
       })}

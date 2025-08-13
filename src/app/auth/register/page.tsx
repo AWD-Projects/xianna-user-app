@@ -52,7 +52,7 @@ export default function RegisterPage() {
             href="/" 
             className="text-sm text-gray-500 hover:text-gray-700"
           >
-            ← Volver al inicio
+            ← Volver al home
           </Link>
         </div>
       </div>
