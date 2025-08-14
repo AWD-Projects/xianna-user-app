@@ -28,6 +28,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const { error } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
@@ -48,7 +49,11 @@ export function RegisterForm() {
         password: data.password,
         name: data.name
       })).unwrap()
-      router.push('/formulario')
+      setShowSuccess(true)
+      // Redirect after showing success message
+      setTimeout(() => {
+        router.push('/auth/login')
+      }, 2000)
     } catch (error) {
       console.error('Register error:', error)
     } finally {
@@ -138,12 +143,20 @@ export function RegisterForm() {
         </div>
       )}
 
+      {showSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <p className="text-green-700 text-sm">
+            ¡Cuenta creada exitosamente! Revisa tu email para confirmar tu cuenta, luego podrás iniciar sesión.
+          </p>
+        </div>
+      )}
+
       <Button 
         type="submit" 
-        disabled={isLoading} 
+        disabled={isLoading || showSuccess} 
         className="w-full"
       >
-        {isLoading ? 'Creando cuenta...' : 'Crear cuenta'}
+        {isLoading ? 'Creando cuenta...' : showSuccess ? 'Cuenta creada' : 'Crear cuenta'}
       </Button>
     </form>
   )

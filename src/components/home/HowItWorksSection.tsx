@@ -142,7 +142,7 @@ export function HowItWorksSection() {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
-                  onClick={() => router.push('/formulario')}
+                  onClick={() => router.push('/perfil')}
                   className="bg-white text-pink-600 hover:bg-gray-50 border-0 rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { StyleSummaryGenerator } from '@/components/ui/style-summary-generator'
 import { ArrowRight } from 'lucide-react'
 import type { Style, UserProfile } from '@/types'
 import type { RootState } from '@/store'
@@ -42,6 +43,23 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
             {userStyle?.descripcion || 'Tu estilo es completamente único y especial.'}
           </p>
         </div>
+
+        {/* Visual Summary Generator */}
+        {userStyle && (
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              ¡Comparte tu resultado!
+            </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              Genera una imagen personalizada de tu estilo para compartir en redes sociales
+            </p>
+            <StyleSummaryGenerator 
+              profile={result} 
+              style={userStyle} 
+              className="text-center"
+            />
+          </div>
+        )}
       </div>
 
       <div className="space-y-6 max-w-md mx-auto">

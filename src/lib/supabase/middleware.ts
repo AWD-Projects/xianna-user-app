@@ -43,15 +43,14 @@ export async function updateSession(request: NextRequest) {
     '/',
     '/blog',
     '/catalogo', 
-    '/contacto',
-    '/formulario'
+    '/contacto'
   ]
 
   // Define auth routes
   const authRoutes = ['/auth/login', '/auth/register']
 
   // Define protected routes that require authentication
-  const protectedRoutes = ['/perfil', '/mis-outfits']
+  const protectedRoutes = ['/perfil', '/mis-outfits', '/formulario']
 
   // Skip API routes and static files
   if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {

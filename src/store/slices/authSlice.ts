@@ -34,6 +34,10 @@ export const signupUser = createAsyncThunk(
   'auth/signupUser',
   async ({ email, password, name }: { email: string; password: string; name: string }) => {
     const supabase = createClient()
+    
+    // Get the base URL for email redirect
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -41,6 +45,7 @@ export const signupUser = createAsyncThunk(
         data: {
           full_name: name,
         },
+        emailRedirectTo: `${baseUrl}/auth/callback`,
       },
     })
     

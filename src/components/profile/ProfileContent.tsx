@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StyleSummaryGenerator } from '@/components/ui/style-summary-generator'
 import { Sparkles, Heart, Book, ShoppingBag } from 'lucide-react'
 import type { User as AuthUser } from '@supabase/supabase-js'
 import type { UserProfile, Style } from '@/types'
@@ -116,14 +117,12 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
                   {style.descripcion}
                 </p>
                 
-                <div className="flex gap-3">
-                  <Button 
-                    className="bg-[#E61F93] hover:bg-[#E61F93]/90 text-white rounded-xl font-medium"
-                    onClick={() => router.push('/formulario')}
-                  >
-                    Actualizar estilo
-                  </Button>
-                </div>
+                <Button 
+                  className="bg-[#E61F93] hover:bg-[#E61F93]/90 text-white rounded-xl font-medium w-full"
+                  onClick={() => router.push('/formulario')}
+                >
+                  Actualizar estilo
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -159,7 +158,29 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
           <h2 className="text-2xl font-bold text-gray-900">Acciones Rápidas</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Visual Summary Generator Card */}
+          {profile && style && (
+            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#E61F93]/10 to-[#00D1ED]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Sparkles className="w-8 h-8 text-[#E61F93]" />
+                </div>
+                <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#E61F93] transition-colors">
+                  Compartir Estilo
+                </h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Genera imagen de tu estilo para redes sociales
+                </p>
+                <StyleSummaryGenerator 
+                  profile={profile} 
+                  style={style} 
+                  className="text-center"
+                />
+              </CardContent>
+            </Card>
+          )}
           
           {/* Favorites Card */}
           <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">
