@@ -6,6 +6,7 @@ interface BlogState {
   blogs: Blog[]
   categories: BlogCategory[]
   currentBlog: Blog | null
+  userRatings: Record<number, number> // blogId -> rating
   loading: boolean
   error: string | null
   pagination: {
@@ -19,6 +20,7 @@ const initialState: BlogState = {
   blogs: [],
   categories: [],
   currentBlog: null,
+  userRatings: {},
   loading: false,
   error: null,
   pagination: {
@@ -167,13 +169,42 @@ export const fetchBlogCategories = createAsyncThunk(
   }
 )
 
+export const fetchUserBlogRating = createAsyncThunk(
+  'blog/fetchUserBlogRating',
+  async ({ blogId, userId }: { blogId: number; userId: string }) => {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('blogs_calificados')
+      .select('calificacion')
+      .eq('blog', blogId)
+      .eq('usuario', userId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') throw error // PGRST116 is "not found"
+    return { blogId, rating: data?.calificacion || 0 }
+  }
+)
+
 export const rateBlog = createAsyncThunk(
   'blog/rateBlog',
   async ({ blogId, rating, userId }: { blogId: number; rating: number; userId: string }) => {
     const supabase = createClient()
+    
+    // Check if user has already rated this blog
+    const { data: existingRating } = await supabase
+      .from('blogs_calificados')
+      .select('id')
+      .eq('blog', blogId)
+      .eq('usuario', userId)
+      .single()
+
+    if (existingRating) {
+      throw new Error('Ya has calificado este artículo')
+    }
+
     const { error } = await supabase
       .from('blogs_calificados')
-      .upsert({ 
+      .insert({ 
         blog: blogId, 
         calificacion: rating, 
         usuario: userId 
@@ -232,8 +263,13 @@ const blogSlice = createSlice({
       .addCase(fetchBlogCategories.fulfilled, (state, action) => {
         state.categories = action.payload
       })
+      // Fetch user blog rating
+      .addCase(fetchUserBlogRating.fulfilled, (state, action) => {
+        state.userRatings[action.payload.blogId] = action.payload.rating
+      })
       // Rate blog
       .addCase(rateBlog.fulfilled, (state, action) => {
+        state.userRatings[action.payload.blogId] = action.payload.rating
         if (state.currentBlog && state.currentBlog.id === action.payload.blogId) {
           // Update current blog rating (simplified)
           state.currentBlog.rating = action.payload.rating

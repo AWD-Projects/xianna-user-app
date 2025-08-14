@@ -47,10 +47,17 @@ export interface Outfit {
   id_estilo: number
   estilo: string
   imagen: string
+  precio?: number
   ocasiones: string[]
   favoritos: number
   created_at: string
   updated_at: string
+  ocasion?: string
+  estilos?: {
+    id: number
+    tipo: string
+    descripcion: string
+  }
 }
 
 export interface Style {
