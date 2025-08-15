@@ -11,9 +11,8 @@ const personalInfoSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   age: z.number().min(16, 'Debes ser mayor de 16 años').max(100, 'Edad no válida'),
   gender: z.string().min(1, 'Selecciona tu género'),
-  profession: z.string().min(2, 'La profesión es requerida'),
-  city: z.string().min(2, 'La ciudad es requerida'),
-  bodyType: z.string().min(1, 'Selecciona tu tipo de cuerpo'),
+  occupation: z.string().min(1, 'Selecciona tu ocupación'),
+  state: z.string().min(1, 'Selecciona tu estado'),
   size: z.string().min(1, 'Selecciona tu talla')
 })
 
@@ -82,7 +81,7 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
             </label>
             <select
               {...register('gender')}
-              className={`w-full h-12 border rounded-lg px-4 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.gender ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full h-12 border rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.gender ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Selecciona tu género</option>
               <option value="femenino">Femenino</option>
@@ -97,60 +96,74 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Profesión
+              Ocupación
             </label>
-            <Input
-              {...register('profession')}
-              placeholder="¿A qué te dedicas?"
-              className={`h-12 text-base ${errors.profession ? 'border-red-400 focus:border-red-400' : 'focus:border-[#E61F93]'}`}
-            />
-            {errors.profession && (
-              <p className="text-red-500 text-sm mt-1">{errors.profession.message}</p>
+            <select
+              {...register('occupation')}
+              className={`w-full h-12 border rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.occupation ? 'border-red-400' : 'border-gray-300'}`}
+            >
+              <option value="">Selecciona tu ocupación</option>
+              <option value="estudiante">Estudiante</option>
+              <option value="profesionista-oficina">Profesionista en oficina (contadora, abogada, ejecutiva)</option>
+              <option value="profesionista-creativa">Profesionista creativa (diseñadora, fotógrafa, artista)</option>
+              <option value="profesionista-salud">Profesionista en sector salud</option>
+              <option value="profesionista-educativo">Profesionista en sector educativo</option>
+              <option value="emprendedora">Dueña de negocio / Emprendedora</option>
+              <option value="ama-casa">Ama de casa / Cuidadora</option>
+            </select>
+            {errors.occupation && (
+              <p className="text-red-500 text-sm mt-1">{errors.occupation.message}</p>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ciudad
+              Estado
             </label>
-            <Input
-              {...register('city')}
-              placeholder="¿Dónde vives?"
-              className={`h-12 text-base ${errors.city ? 'border-red-400 focus:border-red-400' : 'focus:border-[#E61F93]'}`}
-            />
-            {errors.city && (
-              <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
+            <select
+              {...register('state')}
+              className={`w-full h-12 border rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.state ? 'border-red-400' : 'border-gray-300'}`}
+            >
+              <option value="">Selecciona tu estado</option>
+              <option value="aguascalientes">Aguascalientes</option>
+              <option value="baja-california">Baja California</option>
+              <option value="baja-california-sur">Baja California Sur</option>
+              <option value="campeche">Campeche</option>
+              <option value="chiapas">Chiapas</option>
+              <option value="chihuahua">Chihuahua</option>
+              <option value="coahuila">Coahuila</option>
+              <option value="colima">Colima</option>
+              <option value="durango">Durango</option>
+              <option value="guanajuato">Guanajuato</option>
+              <option value="guerrero">Guerrero</option>
+              <option value="hidalgo">Hidalgo</option>
+              <option value="jalisco">Jalisco</option>
+              <option value="mexico">Estado de México</option>
+              <option value="michoacan">Michoacán</option>
+              <option value="morelos">Morelos</option>
+              <option value="nayarit">Nayarit</option>
+              <option value="nuevo-leon">Nuevo León</option>
+              <option value="oaxaca">Oaxaca</option>
+              <option value="puebla">Puebla</option>
+              <option value="queretaro">Querétaro</option>
+              <option value="quintana-roo">Quintana Roo</option>
+              <option value="san-luis-potosi">San Luis Potosí</option>
+              <option value="sinaloa">Sinaloa</option>
+              <option value="sonora">Sonora</option>
+              <option value="tabasco">Tabasco</option>
+              <option value="tamaulipas">Tamaulipas</option>
+              <option value="tlaxcala">Tlaxcala</option>
+              <option value="veracruz">Veracruz</option>
+              <option value="yucatan">Yucatán</option>
+              <option value="zacatecas">Zacatecas</option>
+              <option value="cdmx">Ciudad de México</option>
+            </select>
+            {errors.state && (
+              <p className="text-red-500 text-sm mt-1">{errors.state.message}</p>
             )}
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Tipo de cuerpo
-              </label>
-              <Link 
-                href="/blog/56" 
-                target="_blank"
-                className="text-xs text-[#E61F93] hover:text-[#E61F93]/80 font-medium transition-colors"
-              >
-                ¿No conoces tu tipo de cuerpo?
-              </Link>
-            </div>
-            <select
-              {...register('bodyType')}
-              className={`w-full h-12 border rounded-lg px-4 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.bodyType ? 'border-red-400' : 'border-gray-300'}`}
-            >
-              <option value="">Selecciona tu tipo</option>
-              <option value="pera">Pera</option>
-              <option value="manzana">Manzana</option>
-              <option value="reloj-arena">Reloj de arena</option>
-              <option value="rectangulo">Rectángulo</option>
-              <option value="triangulo-invertido">Triángulo invertido</option>
-            </select>
-            {errors.bodyType && (
-              <p className="text-red-500 text-sm mt-1">{errors.bodyType.message}</p>
-            )}
-          </div>
+
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -158,7 +171,7 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
             </label>
             <select
               {...register('size')}
-              className={`w-full h-12 border rounded-lg px-4 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.size ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full h-12 border rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.size ? 'border-red-400' : 'border-gray-300'}`}
             >
               <option value="">Selecciona tu talla</option>
               <option value="XS">XS</option>
@@ -171,6 +184,9 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
             {errors.size && (
               <p className="text-red-500 text-sm mt-1">{errors.size.message}</p>
             )}
+            <p className="text-xs text-gray-500 mt-2">
+              Este dato lo queremos para personalizar tu experiencia de acuerdo a tus necesidades
+            </p>
           </div>
         </div>
 

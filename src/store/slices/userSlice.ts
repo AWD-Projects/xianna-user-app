@@ -139,9 +139,8 @@ export const submitQuestionnaire = createAsyncThunk(
       nombre: personalData.name,
       edad: personalData.age,
       genero: personalData.gender,
-      profesion: personalData.profession,
-      ciudad: personalData.city,
-      tipo_cuerpo: personalData.bodyType,
+      ocupacion: personalData.occupation,
+      ciudad: personalData.state, // Send estado to ciudad column
       talla: personalData.size,
       tipo_estilo: mostSelectedStyleId,
     }
