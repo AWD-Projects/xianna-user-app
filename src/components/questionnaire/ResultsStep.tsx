@@ -35,13 +35,13 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
     return (
       <div className="text-center space-y-8 max-w-2xl mx-auto">
         <h4 className="text-2xl font-bold text-gray-900 mb-4">
-          Para conocer tus resultados
+          🎉 ¡Tu estilo único te está esperando!
         </h4>
         <p className="text-gray-600 leading-relaxed mb-6">
-          <span className="font-semibold">Crea tu cuenta en Xianna</span>, también tendrás acceso a todas las funcionalidades de Xianna para conocer más sobre tu estilo.
+          <span className="font-semibold">Únete a Xianna gratis</span> y descubre tu perfil de estilo personalizado, outfits curados especialmente para ti, y consejos exclusivos de nuestros expertos.
         </p>
         <p className="text-sm text-gray-500 mb-8">
-          Tus respuestas se guardarán para completar tu perfil una vez que te registres.
+          ✨ Ya guardamos tus respuestas - solo te tomará 30 segundos crear tu cuenta y ver tus resultados.
         </p>
         
         <Button 
