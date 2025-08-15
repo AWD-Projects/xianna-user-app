@@ -8,7 +8,7 @@ import { Star, Users, Share2, BookOpen, Clock, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StarRating } from '@/components/ui/star-rating'
-import { rateBlog, fetchUserBlogRating } from '@/store/slices/blogSlice'
+import { rateBlog, rateBlogAsGuest, fetchUserBlogRating } from '@/store/slices/blogSlice'
 import type { RootState, AppDispatch } from '@/store'
 import type { Blog } from '@/types'
 
@@ -29,12 +29,13 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
   const [imageError, setImageError] = useState(false)
   const [isRating, setIsRating] = useState(false)
   const [ratingError, setRatingError] = useState('')
+  const [guestRating, setGuestRating] = useState(0)
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
   const { userRatings } = useSelector((state: RootState) => state.blog)
   
-  const userRating = userRatings[blog.id] || 0
+  const userRating = user ? (userRatings[blog.id] || 0) : guestRating
   const hasRated = userRating > 0
   
   const categoryColor = categoryColors[blog.id_categoria % categoryColors.length]
@@ -47,28 +48,49 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
         blogId: blog.id, 
         userId: user.email || user.id 
       }))
+    } else if (!user) {
+      // Check guest ratings from localStorage
+      const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
+      if (guestRatings[blog.id]) {
+        setGuestRating(guestRatings[blog.id])
+      }
     }
   }, [user, blog.id, userRatings, dispatch])
 
   const handleRating = async (rating: number) => {
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
+    // Check for existing rating (both authenticated and guest)
     if (hasRated) {
       setRatingError('Ya has calificado este artículo')
       return
     }
 
+    // Check guest ratings from localStorage
+    if (!user) {
+      const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
+      if (guestRatings[blog.id]) {
+        setRatingError('Ya has calificado este artículo')
+        return
+      }
+    }
+
     setIsRating(true)
     setRatingError('')
     try {
-      await dispatch(rateBlog({ 
-        blogId: blog.id, 
-        rating, 
-        userId: user.email || user.id 
-      })).unwrap()
+      if (user) {
+        // Authenticated user rating
+        await dispatch(rateBlog({ 
+          blogId: blog.id, 
+          rating, 
+          userId: user.email || user.id 
+        })).unwrap()
+      } else {
+        // Guest rating
+        await dispatch(rateBlogAsGuest({ 
+          blogId: blog.id, 
+          rating
+        })).unwrap()
+        setGuestRating(rating)
+      }
     } catch (error: any) {
       console.error('Error rating blog:', error)
       setRatingError(error.message || 'Error al calificar el artículo')
@@ -167,31 +189,34 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
             </div>
           </div>
           
-          {/* User Rating */}
-          {user && (
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-sm text-gray-600 mb-2 text-center">
-                {hasRated ? 'Tu valoración:' : '¿Qué te pareció este artículo?'}
+          {/* Rating Section - For both authenticated and guest users */}
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <p className="text-sm text-gray-600 mb-2 text-center">
+              {hasRated ? 'Tu valoración:' : '¿Qué te pareció este artículo?'}
+            </p>
+            <StarRating
+              rating={userRating}
+              onRatingChange={hasRated ? undefined : handleRating}
+              readonly={isRating || hasRated}
+              size="lg"
+              className="justify-center"
+            />
+            {hasRated && (
+              <p className="text-xs text-[#E61F93] mt-2 text-center font-medium">
+                ¡Gracias por tu valoración!
               </p>
-              <StarRating
-                rating={userRating}
-                onRatingChange={hasRated ? undefined : handleRating}
-                readonly={isRating || hasRated}
-                size="lg"
-                className="justify-center"
-              />
-              {hasRated && (
-                <p className="text-xs text-[#E61F93] mt-2 text-center font-medium">
-                  ¡Gracias por tu valoración!
-                </p>
-              )}
-              {!hasRated && ratingError && (
-                <p className="text-xs text-red-500 mt-2 text-center">
-                  {ratingError}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+            {!hasRated && ratingError && (
+              <p className="text-xs text-red-500 mt-2 text-center">
+                {ratingError}
+              </p>
+            )}
+            {!user && !hasRated && (
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Califica como invitado - no necesitas cuenta
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

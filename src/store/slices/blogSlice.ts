@@ -215,6 +215,38 @@ export const rateBlog = createAsyncThunk(
   }
 )
 
+export const rateBlogAsGuest = createAsyncThunk(
+  'blog/rateBlogAsGuest',
+  async ({ blogId, rating }: { blogId: number; rating: number }) => {
+    const supabase = createClient()
+    
+    // Check localStorage to prevent duplicate guest ratings
+    const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
+    if (guestRatings[blogId]) {
+      throw new Error('Ya has calificado este artículo')
+    }
+    
+    // Generate a unique guest identifier
+    const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    const { error } = await supabase
+      .from('blogs_calificados')
+      .insert({ 
+        blog: blogId, 
+        calificacion: rating, 
+        usuario: guestId 
+      })
+
+    if (error) throw error
+    
+    // Store in localStorage to prevent duplicate ratings
+    guestRatings[blogId] = rating
+    localStorage.setItem('guestBlogRatings', JSON.stringify(guestRatings))
+    
+    return { blogId, rating }
+  }
+)
+
 const blogSlice = createSlice({
   name: 'blog',
   initialState,
@@ -269,6 +301,14 @@ const blogSlice = createSlice({
       })
       // Rate blog
       .addCase(rateBlog.fulfilled, (state, action) => {
+        state.userRatings[action.payload.blogId] = action.payload.rating
+        if (state.currentBlog && state.currentBlog.id === action.payload.blogId) {
+          // Update current blog rating (simplified)
+          state.currentBlog.rating = action.payload.rating
+        }
+      })
+      // Rate blog as guest
+      .addCase(rateBlogAsGuest.fulfilled, (state, action) => {
         state.userRatings[action.payload.blogId] = action.payload.rating
         if (state.currentBlog && state.currentBlog.id === action.payload.blogId) {
           // Update current blog rating (simplified)

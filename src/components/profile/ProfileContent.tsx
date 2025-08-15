@@ -20,34 +20,37 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
   const router = useRouter()
   const hasCompletedProfile = profile && profile.tipo_estilo
 
-  if (!hasCompletedProfile) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <Card className="text-center p-12 border-2 border-dashed border-[#FDE12D]/30 bg-gradient-to-br from-[#FDE12D]/5 to-white">
-          <div className="w-20 h-20 bg-[#FDE12D]/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Sparkles className="w-10 h-10 text-[#FDE12D]" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            ¡Descubre tu estilo personal!
-          </h2>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
-            Completa nuestro cuestionario personalizado y descubre outfits únicos creados especialmente para ti.
-          </p>
-          <Button 
-            className="bg-[#FDE12D] hover:bg-[#FDE12D]/90 text-gray-900 rounded-xl font-bold px-8 py-3 text-base"
-            onClick={() => router.push('/formulario')}
-          >
-            Comenzar cuestionario
-          </Button>
-        </Card>
-      </div>
-    )
-  }
+  // Render questionnaire banner for users who haven't completed it
+  const renderQuestionnaireBanner = () => (
+    <div className="max-w-4xl mx-auto mb-12">
+      <Card className="text-center p-12 border-2 border-dashed border-[#FDE12D]/30 bg-gradient-to-br from-[#FDE12D]/5 to-white">
+        <div className="w-20 h-20 bg-[#FDE12D]/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <Sparkles className="w-10 h-10 text-[#FDE12D]" />
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          ¡Descubre tu estilo personal!
+        </h2>
+        <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+          Completa nuestro cuestionario personalizado y descubre outfits únicos creados especialmente para ti.
+        </p>
+        <Button 
+          className="bg-[#FDE12D] hover:bg-[#FDE12D]/90 text-gray-900 rounded-xl font-bold px-8 py-3 text-base"
+          onClick={() => router.push('/formulario')}
+        >
+          Comenzar cuestionario
+        </Button>
+      </Card>
+    </div>
+  )
 
   return (
     <div className="space-y-12">
-      {/* Main Profile Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Show questionnaire banner if profile not completed */}
+      {!hasCompletedProfile && renderQuestionnaireBanner()}
+      
+      {/* Main Profile Section - only show if profile completed */}
+      {hasCompletedProfile && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Profile Card */}
         <Card className="lg:col-span-2">
@@ -150,9 +153,9 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
           </Card>
         )}
       </div>
+      )}
 
-
-      {/* Quick Actions Section */}
+      {/* Quick Actions Section - Always shown */}
       <div>
         <div className="flex items-center gap-3 mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Acciones Rápidas</h2>
@@ -160,27 +163,54 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
-          {/* Visual Summary Generator Card */}
-          {profile && style && (
-            <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-[#E61F93]/10 to-[#00D1ED]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="w-8 h-8 text-[#E61F93]" />
-                </div>
-                <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#E61F93] transition-colors">
-                  Compartir Estilo
-                </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Genera imagen de tu estilo para redes sociales
-                </p>
+          {/* Visual Summary Generator Card - Always shown */}
+          <Card className={`group overflow-hidden transition-all duration-300 ${
+            profile && style 
+              ? 'hover:border-gray-200 hover:scale-105 cursor-pointer' 
+              : 'border-gray-100 bg-gray-50/50 cursor-not-allowed opacity-60'
+          }`}>
+            <CardContent className="p-8 text-center">
+              <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-transform duration-300 ${
+                profile && style 
+                  ? 'bg-gradient-to-br from-[#E61F93]/10 to-[#00D1ED]/10 group-hover:scale-110' 
+                  : 'bg-gray-200'
+              }`}>
+                <Sparkles className={`w-8 h-8 ${
+                  profile && style ? 'text-[#E61F93]' : 'text-gray-400'
+                }`} />
+              </div>
+              <h3 className={`font-bold text-xl mb-3 transition-colors ${
+                profile && style 
+                  ? 'text-gray-900 group-hover:text-[#E61F93]' 
+                  : 'text-gray-500'
+              }`}>
+                Compartir Estilo
+              </h3>
+              <p className={`mb-6 leading-relaxed ${
+                profile && style ? 'text-gray-600' : 'text-gray-400'
+              }`}>
+                {profile && style 
+                  ? 'Genera imagen de tu estilo para redes sociales'
+                  : 'Completa el cuestionario para generar tu imagen de estilo'
+                }
+              </p>
+              {profile && style ? (
                 <StyleSummaryGenerator 
                   profile={profile} 
                   style={style} 
                   className="text-center"
                 />
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <Button 
+                  disabled
+                  className="bg-gray-300 text-gray-500 cursor-not-allowed rounded-xl px-8 py-3 min-w-[200px]"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Generar resumen visual
+                </Button>
+              )}
+            </CardContent>
+          </Card>
           
           {/* Favorites Card */}
           <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:scale-105 cursor-pointer">

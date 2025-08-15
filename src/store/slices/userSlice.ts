@@ -138,6 +138,7 @@ export const submitQuestionnaire = createAsyncThunk(
     const updates = {
       nombre: personalData.name,
       edad: personalData.age,
+      genero: personalData.gender,
       profesion: personalData.profession,
       ciudad: personalData.city,
       tipo_cuerpo: personalData.bodyType,

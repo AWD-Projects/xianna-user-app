@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { StyleSummaryGenerator } from '@/components/ui/style-summary-generator'
 import { ArrowRight } from 'lucide-react'
 import type { Style, UserProfile } from '@/types'
@@ -23,7 +22,7 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
     if (user) {
       router.push('/perfil')
     } else {
-      router.push('/auth/login')
+      router.push('/auth/register')
     }
   }
 
@@ -31,6 +30,32 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
     router.push('/catalogo')
   }
 
+  // For non-authenticated users, show ONLY the disclaimer and signup button
+  if (!user) {
+    return (
+      <div className="text-center space-y-8 max-w-2xl mx-auto">
+        <h4 className="text-2xl font-bold text-gray-900 mb-4">
+          Para conocer tus resultados
+        </h4>
+        <p className="text-gray-600 leading-relaxed mb-6">
+          <span className="font-semibold">Crea tu cuenta en Xianna</span>, también tendrás acceso a todas las funcionalidades de Xianna para conocer más sobre tu estilo.
+        </p>
+        <p className="text-sm text-gray-500 mb-8">
+          Tus respuestas se guardarán para completar tu perfil una vez que te registres.
+        </p>
+        
+        <Button 
+          onClick={handleGoToProfile}
+          className="w-full bg-[#E61F93] hover:bg-[#E61F93]/90 text-white py-4 text-lg font-semibold"
+        >
+          Crear cuenta en Xianna
+          <ArrowRight className="w-5 h-5 ml-2" />
+        </Button>
+      </div>
+    )
+  }
+
+  // For authenticated users, show full results
   return (
     <div className="text-center space-y-12">
       <div className="mb-12">
@@ -67,7 +92,7 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
           onClick={handleGoToProfile}
           className="w-full bg-[#E61F93] hover:bg-[#E61F93]/90 text-white py-4 text-lg font-semibold"
         >
-          {user ? 'Ir a mi perfil' : 'Iniciar sesión'}
+          Ir a mi perfil
           <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
 
@@ -81,41 +106,24 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
         </Button>
       </div>
 
-      {user ? (
-        <>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-            <h4 className="text-lg font-bold text-green-800 mb-2">
-              ¡Perfil actualizado exitosamente!
-            </h4>
-            <p className="text-green-700">
-              Tu información personal y estilo han sido guardados.
-            </p>
-          </div>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+        <h4 className="text-lg font-bold text-green-800 mb-2">
+          ¡Perfil actualizado exitosamente!
+        </h4>
+        <p className="text-green-700">
+          Tu información personal y estilo han sido guardados.
+        </p>
+      </div>
 
-          <div className="bg-gray-50 rounded-lg p-8">
-            <h4 className="text-2xl font-bold text-gray-900 mb-4">
-              ¡Tu perfil está completo!
-            </h4>
-            <p className="text-gray-600 leading-relaxed">
-              Ahora puedes explorar outfits personalizados, guardar tus favoritos 
-              y recibir recomendaciones basadas en tu estilo único.
-            </p>
-          </div>
-        </>
-      ) : (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-8">
-          <h4 className="text-2xl font-bold text-gray-900 mb-4">
-            ¡Tu estilo te espera!
-          </h4>
-          <p className="text-gray-600 leading-relaxed mb-4">
-            Hemos descubierto tu estilo personal. Para guardar tus resultados 
-            y acceder a recomendaciones personalizadas, inicia sesión o crea una cuenta.
-          </p>
-          <p className="text-sm text-gray-500">
-            Tus respuestas se guardarán temporalmente para completar tu perfil.
-          </p>
-        </div>
-      )}
+      <div className="bg-gray-50 rounded-lg p-8">
+        <h4 className="text-2xl font-bold text-gray-900 mb-4">
+          ¡Tu perfil está completo!
+        </h4>
+        <p className="text-gray-600 leading-relaxed">
+          Ahora puedes explorar outfits personalizados, guardar tus favoritos 
+          y recibir recomendaciones basadas en tu estilo único.
+        </p>
+      </div>
     </div>
   )
 }

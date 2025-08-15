@@ -1,10 +1,8 @@
 import { HeroSection } from '@/components/home/HeroSection'
 import { FeaturesSection } from '@/components/home/FeaturesSection'
 import { HowItWorksSection } from '@/components/home/HowItWorksSection'
-import { QuickAccessSection } from '@/components/home/QuickAccessSection'
-import { AuthSection } from '@/components/home/AuthSection'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
-import { CTASection } from '@/components/home/CTASection'
+import { BlogSection } from '@/components/home/BlogSection'
 import { Footer } from '@/components/home/Footer'
 
 export default function HomePage() {
@@ -16,6 +14,7 @@ export default function HomePage() {
       <FeaturesSection />
       <HowItWorksSection />
       <TestimonialsSection />
+      <BlogSection />
       <Footer />
     </main>
   )

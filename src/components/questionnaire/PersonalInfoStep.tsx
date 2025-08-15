@@ -3,12 +3,14 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const personalInfoSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   age: z.number().min(16, 'Debes ser mayor de 16 años').max(100, 'Edad no válida'),
+  gender: z.string().min(1, 'Selecciona tu género'),
   profession: z.string().min(2, 'La profesión es requerida'),
   city: z.string().min(2, 'La ciudad es requerida'),
   bodyType: z.string().min(1, 'Selecciona tu tipo de cuerpo'),
@@ -76,6 +78,25 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Género
+            </label>
+            <select
+              {...register('gender')}
+              className={`w-full h-12 border rounded-lg px-4 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.gender ? 'border-red-400' : 'border-gray-300'}`}
+            >
+              <option value="">Selecciona tu género</option>
+              <option value="femenino">Femenino</option>
+              <option value="masculino">Masculino</option>
+              <option value="no-binario">No binario</option>
+              <option value="prefiero-no-decir">Prefiero no decir</option>
+            </select>
+            {errors.gender && (
+              <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Profesión
             </label>
             <Input
@@ -103,9 +124,18 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipo de cuerpo
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Tipo de cuerpo
+              </label>
+              <Link 
+                href="/blog/56" 
+                target="_blank"
+                className="text-xs text-[#E61F93] hover:text-[#E61F93]/80 font-medium transition-colors"
+              >
+                ¿No conoces tu tipo de cuerpo?
+              </Link>
+            </div>
             <select
               {...register('bodyType')}
               className={`w-full h-12 border rounded-lg px-4 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93] ${errors.bodyType ? 'border-red-400' : 'border-gray-300'}`}

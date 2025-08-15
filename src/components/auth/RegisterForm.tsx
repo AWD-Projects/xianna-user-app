@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff } from 'lucide-react'
 import { signupUser } from '@/store/slices/authSlice'
+import { validateEmailForSignup } from '@/lib/auth-validation'
 import type { AppDispatch, RootState } from '@/store'
 
 const registerSchema = z.object({
@@ -29,6 +30,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [emailValidationError, setEmailValidationError] = useState('')
   const dispatch = useDispatch<AppDispatch>()
   const { error } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
@@ -43,17 +45,27 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
+    setEmailValidationError('')
+    
     try {
+      // Validate email before attempting signup
+      const validation = await validateEmailForSignup(data.email)
+      if (!validation.isValid) {
+        setEmailValidationError(validation.error || 'Email inválido')
+        return
+      }
+
       await dispatch(signupUser({
         email: data.email,
         password: data.password,
         name: data.name
       })).unwrap()
+      
       setShowSuccess(true)
       // Redirect after showing success message
       setTimeout(() => {
         router.push('/auth/login')
-      }, 2000)
+      }, 10000)
     } catch (error) {
       console.error('Register error:', error)
     } finally {
@@ -80,10 +92,13 @@ export function RegisterForm() {
           type="email"
           placeholder="Email"
           {...register('email')}
-          className={errors.email ? 'border-red-500' : ''}
+          className={errors.email || emailValidationError ? 'border-red-500' : ''}
         />
         {errors.email && (
           <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+        )}
+        {emailValidationError && !errors.email && (
+          <p className="text-red-500 text-sm mt-1">{emailValidationError}</p>
         )}
       </div>
 

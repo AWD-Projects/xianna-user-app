@@ -55,7 +55,12 @@ export function translateAuthError(error: any): string {
       return 'Usuario no encontrado. Verifica tu email.'
     }
     
-    if (lowerMessage.includes('email already') && lowerMessage.includes('registered')) {
+    // Enhanced duplicate email detection
+    if (lowerMessage.includes('email already') || 
+        lowerMessage.includes('already registered') ||
+        lowerMessage.includes('user already registered') ||
+        lowerMessage.includes('duplicate') ||
+        lowerMessage.includes('este email ya está registrado')) {
       return 'Este email ya está registrado. Intenta iniciar sesión.'
     }
     
@@ -69,6 +74,11 @@ export function translateAuthError(error: any): string {
     
     if (lowerMessage.includes('network') || lowerMessage.includes('connection')) {
       return 'Error de conexión. Verifica tu conexión a internet.'
+    }
+
+    // Handle database constraint violations (PostgreSQL error code 23505)
+    if (lowerMessage.includes('23505') || lowerMessage.includes('unique constraint')) {
+      return 'Este email ya está registrado. Intenta iniciar sesión.'
     }
   }
 
