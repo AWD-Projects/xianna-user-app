@@ -4,10 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import Image from 'next/image'
-import { Heart, Share2, ShoppingBag, Sparkles } from 'lucide-react'
+import { toast } from 'sonner'
+import { Heart, Share2, ShoppingBag, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
+import WhatsAppIcon from '@mui/icons-material/WhatsApp'
+import FacebookIcon from '@mui/icons-material/Facebook'
+import InstagramIcon from '@mui/icons-material/Instagram'
 import type { AppDispatch, RootState } from '@/store'
 
 import type { Outfit } from '@/types'
@@ -19,6 +23,7 @@ interface OutfitDetailContentProps {
 export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
@@ -45,25 +50,41 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
     }
   }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: outfit.nombre,
-          text: outfit.descripcion,
-          url: window.location.href,
+  const handleShare = () => {
+    setShowShareMenu(!showShareMenu)
+  }
+
+  const shareToSocial = (platform: string) => {
+    const link = window.location.href
+    
+    switch (platform) {
+      case 'whatsapp':
+        // Copy text to clipboard for WhatsApp
+        const whatsappText = `¡Mira este increíble outfit "${outfit.nombre}" en Xianna! ${outfit.descripcion} ${link} #moda #estilo #xianna #outfit`
+        navigator.clipboard.writeText(whatsappText)
+        toast.success('¡Texto copiado!', {
+          description: 'Pégalo en WhatsApp para compartir este outfit.',
+          duration: 4000
         })
-      } catch (error) {
-        console.error('Error sharing:', error)
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href)
-        // You could show a toast notification here
-      } catch (error) {
-        console.error('Error copying to clipboard:', error)
-      }
+        setShowShareMenu(false)
+        return
+      case 'facebook':
+        const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+        window.open(facebookUrl, '_blank')
+        setShowShareMenu(false)
+        return
+      case 'instagram':
+        // Instagram doesn't support direct URL sharing, so we'll copy to clipboard
+        const instagramText = `${outfit.nombre} - ${outfit.descripcion} ${link} #moda #estilo #xianna #outfit`
+        navigator.clipboard.writeText(instagramText)
+        toast.success('¡Texto copiado!', {
+          description: 'Pégalo en tu historia de Instagram para compartir este outfit.',
+          duration: 4000
+        })
+        setShowShareMenu(false)
+        return
+      default:
+        return
     }
   }
 
@@ -93,28 +114,48 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
             
             {/* Floating Action Buttons */}
             <div className="absolute top-4 right-4 flex flex-col gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleFavoriteToggle}
-                disabled={isLoading}
-                className={`w-12 h-12 rounded-full border-2 shadow-lg backdrop-blur-sm transition-all duration-300 ${
-                  isFavorite 
-                    ? 'bg-[#E61F93] border-[#E61F93] text-white hover:bg-[#E61F93]/90' 
-                    : 'bg-white/90 border-white text-gray-600 hover:bg-white hover:text-[#E61F93]'
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
-              </Button>
               
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleShare}
-                className="w-12 h-12 rounded-full border-2 border-white bg-white/90 text-gray-600 hover:bg-white hover:text-[#00D1ED] shadow-lg backdrop-blur-sm transition-all duration-300"
-              >
-                <Share2 className="w-5 h-5" />
-              </Button>
+              <div className="relative">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleShare}
+                  className="w-12 h-12 rounded-full border-2 border-white bg-white/90 text-gray-600 hover:bg-white hover:text-[#00D1ED] shadow-lg backdrop-blur-sm transition-all duration-300"
+                >
+                  {showShareMenu ? <X className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                </Button>
+                
+                {/* Share Menu */}
+                {showShareMenu && (
+                  <div className="absolute right-0 top-14 bg-white rounded-xl shadow-xl border border-gray-200 p-1 z-50 min-w-[160px]">
+                    <div className="space-y-0.5">
+                      <button
+                        onClick={() => shareToSocial('whatsapp')}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <WhatsAppIcon sx={{ color: '#25D366', fontSize: 20 }} />
+                        <span className="text-sm text-gray-700">WhatsApp</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => shareToSocial('facebook')}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <FacebookIcon sx={{ color: '#1877F2', fontSize: 20 }} />
+                        <span className="text-sm text-gray-700">Facebook</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => shareToSocial('instagram')}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <InstagramIcon sx={{ color: '#E1306C', fontSize: 20 }} />
+                        <span className="text-sm text-gray-700">Instagram</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -140,12 +181,22 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
               <Sparkles className="w-3 h-3 mr-1" />
               {outfit.estilo}
             </Badge>
-            <Badge 
-              variant="outline" 
-              className="border-[#FDE12D] bg-[#FDE12D]/10 text-gray-700"
-            >
-              {outfit.ocasion || outfit.ocasiones?.[0] || 'Casual'}
-            </Badge>
+            {outfit.ocasiones?.map((ocasion, index) => (
+              <Badge 
+                key={index}
+                variant="outline" 
+                className="border-[#FDE12D] bg-[#FDE12D]/10 text-gray-700"
+              >
+                {ocasion}
+              </Badge>
+            )) || (
+              <Badge 
+                variant="outline" 
+                className="border-[#FDE12D] bg-[#FDE12D]/10 text-gray-700"
+              >
+                Casual
+              </Badge>
+            )}
           </div>
 
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
@@ -195,6 +246,23 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
               {isFavorite ? 'Guardado en favoritos' : 'Agregar a favoritos'}
             </Button>
             
+          </div>
+
+          {/* Style Questionnaire CTA */}
+          <div className="bg-gradient-to-r from-[#E61F93]/5 to-[#FDE12D]/5 border border-[#E61F93]/20 rounded-2xl p-6 text-center">
+            <div className="flex items-center justify-center mb-3">
+              <Sparkles className="w-6 h-6 text-[#E61F93] mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">¿Te gustó este estilo?</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Descubre outfits personalizados para ti. Realiza nuestro cuestionario y encuentra tu estilo único.
+            </p>
+            <Button
+              onClick={() => router.push('/formulario')}
+              className="bg-[#E61F93] hover:bg-[#E61F93]/90 text-white font-semibold rounded-xl px-6"
+            >
+              Descubrir mi estilo
+            </Button>
           </div>
 
           {!user && (

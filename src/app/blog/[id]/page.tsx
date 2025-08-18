@@ -33,33 +33,43 @@ async function getBlogData(id: string) {
     redirect('/blog')
   }
 
-  // Get blog image URL
-  let imageUrl = '/images/placeholder-blog.jpg'
-  if (blog.image) {
-    const { data: imageData } = supabase.storage
-      .from('blogs')
-      .getPublicUrl(blog.image)
-    if (imageData?.publicUrl) {
-      imageUrl = imageData.publicUrl
-    }
-  } else {
-    // Try to get image from Blogs bucket as fallback
-    try {
-      const { data: files } = await supabase.storage
-        .from('Blogs')
-        .list(`uploads/${blog.id}`, { limit: 1 })
+  // Get blog images URLs
+  let imageUrl = null // Start with null instead of placeholder
+  let additionalImages: string[] = []
 
-      if (files && files.length > 0) {
-        const { data: imageData } = supabase.storage
+
+
+  // Get all additional images from Blogs bucket
+  try {
+    const { data: files } = await supabase.storage
+      .from('Blogs')
+      .list(`uploads/${blog.id}`, { limit: 100 })
+
+    
+    if (files && files.length > 0) {
+      
+      // Use the first file as main image
+      if (files.length > 0) {
+        const { data: mainImageData } = supabase.storage
           .from('Blogs')
           .getPublicUrl(`uploads/${blog.id}/${files[0].name}`)
-        if (imageData?.publicUrl) {
-          imageUrl = imageData.publicUrl
+        if (mainImageData?.publicUrl) {
+          imageUrl = mainImageData.publicUrl
         }
+        
+        // Use remaining files as additional images
+        files.slice(1).forEach(file => {
+          const { data: additionalImageData } = supabase.storage
+            .from('Blogs')
+            .getPublicUrl(`uploads/${blog.id}/${file.name}`)
+          if (additionalImageData?.publicUrl) {
+            additionalImages.push(additionalImageData.publicUrl)
+          }
+        })
       }
-    } catch (error) {
-      console.warn(`Error loading image for blog ${blog.id}:`, error)
     }
+  } catch (error) {
+    console.warn(`Error loading images for blog ${blog.id}:`, error)
   }
 
   // Get blog ratings
@@ -72,10 +82,12 @@ async function getBlogData(id: string) {
     ? ratings.reduce((sum, r) => sum + r.calificacion, 0) / ratings.length 
     : 0
 
+  
   return {
     blog: {
       ...blog,
-      image: imageUrl,
+      image: imageUrl || '/images/logo.png', // Use logo as fallback instead of missing placeholder
+      additionalImages,
       rating: averageRating,
       persons: ratingsCount || 0,
       categoria: blog.categoria_blog?.categoria || 'General'

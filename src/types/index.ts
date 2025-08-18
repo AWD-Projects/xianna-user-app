@@ -10,12 +10,12 @@ export interface UserProfile {
   id: string
   correo: string
   nombre: string
-  sexo?: string
+  genero?: string
   edad?: number
-  profesion?: string
+  ocupacion?: string
   talla?: string
   tipo_cuerpo?: string
-  ciudad?: string
+  estado?: string
   tipo_estilo?: number
   created_at: string
   updated_at: string
@@ -29,6 +29,7 @@ export interface Blog {
   id_categoria: number
   categoria: string
   image: string
+  additionalImages?: string[]
   rating: number
   persons: number
   created_at: string

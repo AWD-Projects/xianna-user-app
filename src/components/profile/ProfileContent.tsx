@@ -2,11 +2,14 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { StyleSummaryGenerator } from '@/components/ui/style-summary-generator'
-import { Sparkles, Heart, Book, ShoppingBag } from 'lucide-react'
+import { Sparkles, Heart, Book, ShoppingBag, Edit2, Save, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { User as AuthUser } from '@supabase/supabase-js'
 import type { UserProfile, Style } from '@/types'
 
@@ -18,7 +21,44 @@ interface ProfileContentProps {
 
 export function ProfileContent({ user, profile, style }: ProfileContentProps) {
   const router = useRouter()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingProfile, setEditingProfile] = useState<UserProfile | null>(profile)
+  const [isLoading, setIsLoading] = useState(false)
   const hasCompletedProfile = profile && profile.tipo_estilo
+
+  const handleSave = async () => {
+    if (!editingProfile) return
+    
+    setIsLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('user_details')
+        .update({
+          nombre: editingProfile.nombre,
+          estado: editingProfile.estado,
+          genero: editingProfile.genero,
+          edad: editingProfile.edad,
+          ocupacion: editingProfile.ocupacion,
+          talla: editingProfile.talla
+        })
+        .eq('correo', user.email)
+      
+      if (error) throw error
+      
+      setIsEditing(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error updating profile:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingProfile(profile)
+    setIsEditing(false)
+  }
 
   // Render questionnaire banner for users who haven't completed it
   const renderQuestionnaireBanner = () => (
@@ -56,43 +96,187 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
         <Card className="lg:col-span-2">
           <CardContent className="p-8">
             {/* Header Section */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                Información Personal
-              </h2>
-              <p className="text-gray-600">Tus datos y preferencias</p>
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  Información Personal
+                </h2>
+                <p className="text-gray-600">Tus datos y preferencias</p>
+              </div>
+              <div className="flex gap-2">
+                {!isEditing ? (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Editar
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSave}
+                      disabled={isLoading}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                    >
+                      <Save className="w-4 h-4" />
+                      {isLoading ? 'Guardando...' : 'Guardar'}
+                    </Button>
+                    <Button
+                      onClick={handleCancel}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* User Info */}
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-2xl p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Nombre</label>
-                    <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.nombre || 'No especificado'}</p>
+                    {isEditing ? (
+                      <Input
+                        value={editingProfile?.nombre || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, nombre: e.target.value} : null)}
+                        className="mt-2"
+                        placeholder="Ingresa tu nombre"
+                      />
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.nombre || 'No especificado'}</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Email</label>
                     <p className="text-lg font-semibold text-gray-900 mt-1">{user.email}</p>
                   </div>
-                  {profile?.edad && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Edad</label>
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile.edad} años</p>
-                    </div>
-                  )}
-                  {profile?.ciudad && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Ciudad</label>
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile.ciudad}</p>
-                    </div>
-                  )}
-                  {profile?.profesion && (
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Profesión</label>
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile.profesion}</p>
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Edad</label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        value={editingProfile?.edad || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, edad: Number(e.target.value)} : null)}
+                        className="mt-2"
+                        placeholder="Ingresa tu edad"
+                        min="18"
+                        max="100"
+                      />
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.edad ? `${profile.edad} años` : 'No especificado'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Estado</label>
+                    {isEditing ? (
+                      <select
+                        value={editingProfile?.estado || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, estado: e.target.value} : null)}
+                        className="mt-2 w-full h-12 border border-gray-300 rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93]"
+                      >
+                        <option value="">Selecciona tu estado</option>
+                        <option value="aguascalientes">Aguascalientes</option>
+                        <option value="baja-california">Baja California</option>
+                        <option value="baja-california-sur">Baja California Sur</option>
+                        <option value="campeche">Campeche</option>
+                        <option value="chiapas">Chiapas</option>
+                        <option value="chihuahua">Chihuahua</option>
+                        <option value="coahuila">Coahuila</option>
+                        <option value="colima">Colima</option>
+                        <option value="durango">Durango</option>
+                        <option value="guanajuato">Guanajuato</option>
+                        <option value="guerrero">Guerrero</option>
+                        <option value="hidalgo">Hidalgo</option>
+                        <option value="jalisco">Jalisco</option>
+                        <option value="mexico">Estado de México</option>
+                        <option value="michoacan">Michoacán</option>
+                        <option value="morelos">Morelos</option>
+                        <option value="nayarit">Nayarit</option>
+                        <option value="nuevo-leon">Nuevo León</option>
+                        <option value="oaxaca">Oaxaca</option>
+                        <option value="puebla">Puebla</option>
+                        <option value="queretaro">Querétaro</option>
+                        <option value="quintana-roo">Quintana Roo</option>
+                        <option value="san-luis-potosi">San Luis Potosí</option>
+                        <option value="sinaloa">Sinaloa</option>
+                        <option value="sonora">Sonora</option>
+                        <option value="tabasco">Tabasco</option>
+                        <option value="tamaulipas">Tamaulipas</option>
+                        <option value="tlaxcala">Tlaxcala</option>
+                        <option value="veracruz">Veracruz</option>
+                        <option value="yucatan">Yucatán</option>
+                        <option value="zacatecas">Zacatecas</option>
+                        <option value="cdmx">Ciudad de México</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.estado || 'No especificado'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Género</label>
+                    {isEditing ? (
+                      <select
+                        value={editingProfile?.genero || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, genero: e.target.value} : null)}
+                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Selecciona tu género</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.genero || 'No especificado'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Talla</label>
+                    {isEditing ? (
+                      <select
+                        value={editingProfile?.talla || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, talla: e.target.value} : null)}
+                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">Selecciona tu talla</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.talla || 'No especificado'}</p>
+                    )}
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-gray-500 uppercase tracking-wide">Ocupación</label>
+                    {isEditing ? (
+                      <select
+                        value={editingProfile?.ocupacion || ''}
+                        onChange={(e) => setEditingProfile(prev => prev ? {...prev, ocupacion: e.target.value} : null)}
+                        className="mt-2 w-full h-12 border border-gray-300 rounded-lg pl-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#E61F93]"
+                      >
+                        <option value="">Selecciona tu ocupación</option>
+                        <option value="estudiante">Estudiante</option>
+                        <option value="profesionista-oficina">Profesionista en oficina (contadora, abogada, ejecutiva)</option>
+                        <option value="profesionista-creativa">Profesionista creativa (diseñadora, fotógrafa, artista)</option>
+                        <option value="profesionista-salud">Profesionista en sector salud</option>
+                        <option value="profesionista-educativo">Profesionista en sector educativo</option>
+                        <option value="emprendedora">Dueña de negocio / Emprendedora</option>
+                        <option value="ama-casa">Ama de casa / Cuidadora</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.ocupacion || 'No especificado'}</p>
+                    )}
+                  </div>
                 </div>
               </div>
               

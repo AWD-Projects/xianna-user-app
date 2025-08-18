@@ -2,11 +2,14 @@
 
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
+import Cookies from 'js-cookie'
 import { OutfitCard } from './OutfitCard'
 import { CatalogFilter } from './CatalogFilter'
 import { CatalogSkeleton } from './CatalogSkeleton'
 import { CatalogPagination } from './CatalogPagination'
 import { fetchOutfits, fetchStyles, fetchOccasions } from '@/store/slices/outfitSlice'
+import { Check } from 'lucide-react'
 import type { AppDispatch, RootState } from '@/store'
 
 interface CatalogGridProps {
@@ -17,6 +20,7 @@ interface CatalogGridProps {
 
 export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
   const dispatch = useDispatch<AppDispatch>()
+  const { user } = useSelector((state: RootState) => state.auth)
   const { 
     outfits, 
     styles: allStyles, 
@@ -24,6 +28,44 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
     loading,
     pagination 
   } = useSelector((state: RootState) => state.outfit)
+
+  // Show first-time favorites tip
+  useEffect(() => {
+    if (user?.email) {
+      const hasSeenFavoritesTip = Cookies.get('xianna-favorites-tip')
+      
+      if (!hasSeenFavoritesTip) {
+        const timer = setTimeout(() => {
+          toast('Haz clic en el corazón para guardar tus outfits favoritos', {
+            duration: 8000,
+            action: {
+              label: <Check className="w-4 h-4" />,
+              onClick: () => {
+                Cookies.set('xianna-favorites-tip', 'seen', { expires: 365 }) // 1 year
+                toast.dismiss()
+              }
+            },
+            style: {
+              background: 'white',
+              border: '1px solid #e5e7eb',
+              color: '#374151'
+            },
+            actionButtonStyle: {
+              backgroundColor: '#E61F93',
+              color: 'white',
+              fontWeight: '500',
+              padding: '6px',
+              minWidth: '32px',
+              height: '32px',
+              borderRadius: '6px'
+            }
+          })
+        }, 2000) // Show after 2 seconds
+        
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [user?.email])
 
   useEffect(() => {
     dispatch(fetchStyles())

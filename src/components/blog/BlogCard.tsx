@@ -25,13 +25,14 @@ export function BlogCard({ blog }: BlogCardProps) {
   return (
     <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-200">
       <Link href={`/blog/${blog.id}`}>
-        <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+        <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
           <Image
             src={blog.image}
             alt={blog.titulo}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            style={{ objectPosition: 'center' }}
           />
           
           <Badge 

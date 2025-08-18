@@ -2,11 +2,14 @@
 
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
+import Cookies from 'js-cookie'
 import { BlogCard } from './BlogCard'
 import { BlogFilter } from './BlogFilter'
 import { BlogPagination } from './BlogPagination'
 import { BlogSkeleton } from './BlogSkeleton'
 import { fetchBlogs, fetchBlogCategories } from '@/store/slices/blogSlice'
+import { Check } from 'lucide-react'
 import type { AppDispatch, RootState } from '@/store'
 
 interface BlogGridProps {
@@ -17,6 +20,7 @@ interface BlogGridProps {
 export function BlogGrid({ category, page }: BlogGridProps) {
   const dispatch = useDispatch<AppDispatch>()
   const { blogs, categories, loading, pagination } = useSelector((state: RootState) => state.blog)
+  const { user } = useSelector((state: RootState) => state.auth)
 
   useEffect(() => {
     dispatch(fetchBlogCategories())
@@ -25,6 +29,44 @@ export function BlogGrid({ category, page }: BlogGridProps) {
   useEffect(() => {
     dispatch(fetchBlogs({ category: category === 'Todo' ? undefined : category, page }))
   }, [dispatch, category, page])
+
+  // Show first-time blog tip
+  useEffect(() => {
+    if (user?.email) {
+      const hasSeenBlogTip = Cookies.get('xianna-blog-tip')
+      
+      if (!hasSeenBlogTip) {
+        const timer = setTimeout(() => {
+          toast('Entra a tu blog favorito y califícalo', {
+            duration: 8000,
+            action: {
+              label: <Check className="w-4 h-4" />,
+              onClick: () => {
+                Cookies.set('xianna-blog-tip', 'seen', { expires: 365 }) // 1 year
+                toast.dismiss()
+              }
+            },
+            style: {
+              background: 'white',
+              border: '1px solid #e5e7eb',
+              color: '#374151'
+            },
+            actionButtonStyle: {
+              backgroundColor: '#E61F93',
+              color: 'white',
+              fontWeight: '500',
+              padding: '6px',
+              minWidth: '32px',
+              height: '32px',
+              borderRadius: '6px'
+            }
+          })
+        }, 2000) // Show after 2 seconds
+        
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [user?.email])
 
   if (loading) {
     return (

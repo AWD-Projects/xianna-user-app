@@ -60,18 +60,18 @@ export const fetchBlogs = createAsyncThunk(
     // Get images and ratings for each blog
     const blogsWithDetails = await Promise.all(
       (data || []).map(async (blog: any) => {
-        // Get blog image
+        // Get blog image from storage uploads folder
+        let imageUrl = '/images/logo.png' // Use existing logo as fallback
+        
         const { data: files, error: filesError } = await supabase.storage
           .from('Blogs')
           .list(`uploads/${blog.id}`, { limit: 1 })
-
-        let imageUrl = '/placeholder-blog.jpg'
-        
+          
         if (files && files.length > 0 && !filesError) {
           const { data: urlData } = supabase.storage
             .from('Blogs')
             .getPublicUrl(`uploads/${blog.id}/${files[0].name}`)
-          imageUrl = urlData.publicUrl
+          imageUrl = urlData.publicUrl || imageUrl
         }
 
         // Get ratings
@@ -120,18 +120,18 @@ export const fetchBlogById = createAsyncThunk(
 
     if (error) throw error
 
-    // Get blog image
+    // Get blog image from storage
     const { data: files, error: filesError } = await supabase.storage
       .from('Blogs')
       .list(`uploads/${data.id}`, { limit: 1 })
 
-    let imageUrl = '/placeholder-blog.jpg'
+    let imageUrl = '/images/logo.png' // Use existing logo as fallback
     
     if (files && files.length > 0 && !filesError) {
       const { data: urlData } = supabase.storage
         .from('Blogs')
         .getPublicUrl(`uploads/${data.id}/${files[0].name}`)
-      imageUrl = urlData.publicUrl
+      imageUrl = urlData.publicUrl || '/images/logo.png'
     }
 
     // Get ratings
@@ -190,18 +190,7 @@ export const rateBlog = createAsyncThunk(
   async ({ blogId, rating, userId }: { blogId: number; rating: number; userId: string }) => {
     const supabase = createClient()
     
-    // Check if user has already rated this blog
-    const { data: existingRating } = await supabase
-      .from('blogs_calificados')
-      .select('id')
-      .eq('blog', blogId)
-      .eq('usuario', userId)
-      .single()
-
-    if (existingRating) {
-      throw new Error('Ya has calificado este artículo')
-    }
-
+    // Always allow rating (no duplicate check)
     const { error } = await supabase
       .from('blogs_calificados')
       .insert({ 
@@ -220,13 +209,7 @@ export const rateBlogAsGuest = createAsyncThunk(
   async ({ blogId, rating }: { blogId: number; rating: number }) => {
     const supabase = createClient()
     
-    // Check localStorage to prevent duplicate guest ratings
-    const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
-    if (guestRatings[blogId]) {
-      throw new Error('Ya has calificado este artículo')
-    }
-    
-    // Generate a unique guest identifier
+    // Generate a unique guest identifier for each rating
     const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
     const { error } = await supabase
@@ -239,7 +222,8 @@ export const rateBlogAsGuest = createAsyncThunk(
 
     if (error) throw error
     
-    // Store in localStorage to prevent duplicate ratings
+    // Update localStorage with latest rating (allow multiple ratings)
+    const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
     guestRatings[blogId] = rating
     localStorage.setItem('guestBlogRatings', JSON.stringify(guestRatings))
     

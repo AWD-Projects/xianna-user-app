@@ -8,10 +8,10 @@ const demoProfile: UserProfile = {
   id: 'demo',
   correo: 'demo@xianna.com',
   nombre: 'María García',
-  sexo: 'F',
+  genero: 'F',
   edad: 28,
-  profesion: 'Diseñadora',
-  ciudad: 'Madrid',
+  ocupacion: 'Diseñadora',
+  estado: 'Madrid',
   tipo_estilo: 1,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
