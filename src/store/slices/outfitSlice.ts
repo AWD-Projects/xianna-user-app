@@ -99,18 +99,23 @@ export const fetchOutfits = createAsyncThunk(
     const outfitsWithDetails: Outfit[] = []
     
     for (const outfit of data || []) {
-      // Get outfit image from storage
+      // Get outfit image from storage - get last uploaded image
       let imageUrl = '/placeholder-outfit.jpg'
       
       try {
         const { data: files } = await supabase.storage
           .from('Outfits')
-          .list(`uploads/${outfit.id}/imagen_principal`, { limit: 1 })
+          .list(`uploads/${outfit.id}/imagen_principal`, { 
+            limit: 100,
+            sortBy: { column: 'created_at', order: 'desc' }
+          })
 
         if (files && files.length > 0) {
+          // Get the last uploaded file (first in desc order)
+          const lastFile = files[0]
           imageUrl = supabase.storage
             .from('Outfits')
-            .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${files[0].name}`)
+            .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${lastFile.name}`)
             .data.publicUrl
         }
       } catch (error) {
@@ -178,18 +183,23 @@ export const fetchOutfitById = createAsyncThunk(
 
     if (error) throw error
 
-    // Get outfit image from storage
+    // Get outfit image from storage - get last uploaded image
     let imageUrl = '/placeholder-outfit.jpg'
     
     try {
       const { data: files } = await supabase.storage
         .from('Outfits')
-        .list(`uploads/${data.id}/imagen_principal`, { limit: 1 })
+        .list(`uploads/${data.id}/imagen_principal`, { 
+          limit: 100,
+          sortBy: { column: 'created_at', order: 'desc' }
+        })
 
       if (files && files.length > 0) {
+        // Get the last uploaded file (first in desc order)
+        const lastFile = files[0]
         imageUrl = supabase.storage
           .from('Outfits')
-          .getPublicUrl(`uploads/${data.id}/imagen_principal/${files[0].name}`)
+          .getPublicUrl(`uploads/${data.id}/imagen_principal/${lastFile.name}`)
           .data.publicUrl
       }
     } catch (error) {
@@ -310,6 +320,9 @@ const outfitSlice = createSlice({
         selectedOccasions: [],
       }
     },
+    clearFavorites: (state) => {
+      state.favorites = []
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -368,5 +381,5 @@ const outfitSlice = createSlice({
   },
 })
 
-export const { clearError, clearCurrentOutfit, setFilters, clearFilters } = outfitSlice.actions
+export const { clearError, clearCurrentOutfit, setFilters, clearFilters, clearFavorites } = outfitSlice.actions
 export default outfitSlice.reducer

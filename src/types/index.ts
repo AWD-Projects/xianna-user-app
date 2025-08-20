@@ -59,6 +59,7 @@ export interface Outfit {
     tipo: string
     descripcion: string
   }
+  prendas?: Prenda[]
 }
 
 export interface Style {
@@ -87,10 +88,11 @@ export interface Answer {
 }
 
 export interface Prenda {
+  idx?: number
   id: number
   nombre: string
   link: string
-  imagen: string
+  imagen?: string
   id_outfit: number
 }
 

@@ -14,7 +14,7 @@ import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import type { AppDispatch, RootState } from '@/store'
 
-import type { Outfit } from '@/types'
+import type { Outfit, Prenda } from '@/types'
 
 interface OutfitDetailContentProps {
   outfit: Outfit
@@ -226,6 +226,43 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
               <p className="text-gray-700 leading-relaxed">
                 {outfit.estilos.descripcion}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Prendas Section */}
+        {outfit.prendas && outfit.prendas.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-gray-900">Prendas del outfit</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {outfit.prendas.map((prenda, index) => (
+                <div
+                  key={prenda.id || index}
+                  className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900 mb-1">
+                        {prenda.nombre}
+                      </h4>
+                      {prenda.link && prenda.link.trim() !== '' && (
+                        <a
+                          href={prenda.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-sm text-[#E61F93] hover:text-[#E61F93]/80 transition-colors"
+                        >
+                          <ShoppingBag className="w-4 h-4 mr-1" />
+                          Ver producto
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg">
+                      <ShoppingBag className="w-6 h-6 text-gray-600" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

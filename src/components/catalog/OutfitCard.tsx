@@ -62,9 +62,13 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
           onClick={handleToggleFavorite}
           disabled={isToggling}
         >
-          <Heart 
-            className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} 
-          />
+          {isToggling ? (
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Heart 
+              className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} 
+            />
+          )}
         </Button>
       )}
       

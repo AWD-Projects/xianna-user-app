@@ -40,40 +40,43 @@ async function getOutfitData(id: string) {
     redirect('/catalogo')
   }
 
-  // Get outfit image URL
+  // Get outfit image URL - get last uploaded image from imagen_principal
   let imageUrl = '/images/placeholder-outfit.jpg'
-  if (outfit.imagen) {
-    const { data: imageData } = supabase.storage
-      .from('outfits')
-      .getPublicUrl(outfit.imagen)
-    if (imageData?.publicUrl) {
-      imageUrl = imageData.publicUrl
-    }
-  } else {
-    // Try to get image from Outfits bucket as fallback
-    try {
-      const { data: files } = await supabase.storage
-        .from('Outfits')
-        .list(`uploads/${outfit.id}/imagen_principal`, { limit: 1 })
+  
+  try {
+    const { data: files } = await supabase.storage
+      .from('Outfits')
+      .list(`uploads/${outfit.id}/imagen_principal`, { 
+        limit: 100,
+        sortBy: { column: 'created_at', order: 'desc' }
+      })
 
-      if (files && files.length > 0) {
-        const { data: imageData } = supabase.storage
-          .from('Outfits')
-          .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${files[0].name}`)
-        if (imageData?.publicUrl) {
-          imageUrl = imageData.publicUrl
-        }
+    if (files && files.length > 0) {
+      // Get the last uploaded file (first in desc order)
+      const lastFile = files[0]
+      const { data: imageData } = supabase.storage
+        .from('Outfits')
+        .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${lastFile.name}`)
+      if (imageData?.publicUrl) {
+        imageUrl = imageData.publicUrl
       }
-    } catch (error) {
-      console.warn(`Error loading image for outfit ${outfit.id}:`, error)
     }
+  } catch (error) {
+    console.warn(`Error loading image for outfit ${outfit.id}:`, error)
   }
 
   // Get favorites count
   const { count: favoritesCount } = await supabase
     .from('favoritos')
     .select('*', { count: 'exact', head: true })
+    .eq('outfit', id)
+
+  // Get prendas for this outfit
+  const { data: prendasData } = await supabase
+    .from('prendas')
+    .select('*')
     .eq('id_outfit', id)
+    .order('id')
 
   // Process occasions data
   const ocasiones = outfit.outfit_ocasion?.map((o: any) => o.ocasion.ocasion) || []
@@ -85,7 +88,8 @@ async function getOutfitData(id: string) {
       favoritos: favoritesCount || 0,
       estilo: outfit.estilos?.tipo || 'Sin estilo',
       ocasion: ocasiones[0] || 'Casual',
-      ocasiones
+      ocasiones,
+      prendas: prendasData || []
     }
   }
 }

@@ -38,13 +38,7 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
   const { favorites: currentFavorites } = useSelector((state: RootState) => state.outfit)
   const [filteredFavorites, setFilteredFavorites] = useState(favorites)
   
-  // Load user favorites into Redux when component mounts
-  useEffect(() => {
-    if (user?.email && currentFavorites.length === 0) {
-      console.log('Debug - Loading user favorites into Redux')
-      dispatch(fetchUserFavorites(user.email))
-    }
-  }, [user?.email, dispatch, currentFavorites.length])
+  // Favorites are now automatically loaded in AuthProvider when user signs in
   
   // Update filtered favorites when props change or favorites are removed
   useEffect(() => {
