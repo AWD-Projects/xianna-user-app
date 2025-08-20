@@ -6,9 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, UserCheck, Mail } from 'lucide-react'
 import { signupUser } from '@/store/slices/authSlice'
 import { validateEmailForSignup } from '@/lib/auth-validation'
 import type { AppDispatch, RootState } from '@/store'
@@ -52,6 +53,11 @@ export function RegisterForm() {
       const validation = await validateEmailForSignup(data.email)
       if (!validation.isValid) {
         setEmailValidationError(validation.error || 'Email inválido')
+        toast.error('Email no válido', {
+          description: validation.error || 'Por favor verifica tu dirección de email',
+          duration: 5000,
+          icon: <Mail className="w-5 h-5 text-red-600" />
+        })
         return
       }
 
@@ -62,6 +68,23 @@ export function RegisterForm() {
       })).unwrap()
       
       setShowSuccess(true)
+      
+      // Show success notification
+      toast.success('¡Cuenta creada exitosamente!', {
+        description: 'Revisa tu email para confirmar tu cuenta antes de iniciar sesión',
+        duration: 8000,
+        icon: <UserCheck className="w-5 h-5 text-green-600" />,
+        style: {
+          background: '#4ade80',
+          color: 'white',
+          border: 'none'
+        },
+        action: {
+          label: 'Iniciar sesión',
+          onClick: () => router.push('/auth/login')
+        }
+      })
+      
       // Redirect after showing success message
       setTimeout(() => {
         router.push('/auth/login')

@@ -35,7 +35,7 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
-  const { favorites: currentFavorites } = useSelector((state: RootState) => state.outfit)
+  const { favorites: currentFavorites, favoritesLoaded } = useSelector((state: RootState) => state.outfit)
   const [filteredFavorites, setFilteredFavorites] = useState(favorites)
   
   // Favorites are now automatically loaded in AuthProvider when user signs in
@@ -44,20 +44,21 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
   useEffect(() => {
     console.log('Debug - favorites from props:', favorites.length)
     console.log('Debug - currentFavorites from Redux:', currentFavorites)
+    console.log('Debug - favoritesLoaded:', favoritesLoaded)
     
-    // If currentFavorites is empty (not loaded), show all favorites from props
-    if (currentFavorites.length === 0) {
-      console.log('Debug - Using favorites from props (Redux not loaded)')
+    // If favorites haven't been loaded into Redux yet, show server-side favorites from props
+    if (!favoritesLoaded) {
+      console.log('Debug - Using favorites from props (Redux not loaded yet)')
       setFilteredFavorites(favorites)
     } else {
-      // Filter out outfits that are no longer in currentFavorites
+      // Redux favorites are loaded, filter based on current Redux state
       const updatedFavorites = favorites.filter(favorite => 
         favorite.outfits && currentFavorites.includes(favorite.outfits.id)
       )
-      console.log('Debug - Filtered favorites:', updatedFavorites.length)
+      console.log('Debug - Filtered favorites based on Redux state:', updatedFavorites.length)
       setFilteredFavorites(updatedFavorites)
     }
-  }, [favorites, currentFavorites])
+  }, [favorites, currentFavorites, favoritesLoaded])
   
   if (filteredFavorites.length === 0) {
     return (
@@ -102,12 +103,12 @@ function OutfitCard({ outfit, user, dispatch }: {
   user: any, 
   dispatch: AppDispatch 
 }) {
-  const { favorites: currentFavorites } = useSelector((state: RootState) => state.outfit)
+  const { favorites: currentFavorites, favoritesLoaded } = useSelector((state: RootState) => state.outfit)
   const [isToggling, setIsToggling] = useState(false)
   const [imageError, setImageError] = useState(false)
   
   const ocasiones = outfit.outfit_ocasion?.map((o: any) => o.ocasion.ocasion) || []
-  const isFavorited = currentFavorites.includes(outfit.id)
+  const isFavorited = favoritesLoaded ? currentFavorites.includes(outfit.id) : true // Default to true if not loaded yet
   
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()

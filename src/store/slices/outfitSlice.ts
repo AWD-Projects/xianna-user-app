@@ -8,6 +8,7 @@ interface OutfitState {
   occasions: Occasion[]
   currentOutfit: Outfit | null
   favorites: number[]
+  favoritesLoaded: boolean
   loading: boolean
   error: string | null
   filters: {
@@ -27,6 +28,7 @@ const initialState: OutfitState = {
   occasions: [],
   currentOutfit: null,
   favorites: [],
+  favoritesLoaded: false,
   loading: false,
   error: null,
   filters: {
@@ -322,6 +324,7 @@ const outfitSlice = createSlice({
     },
     clearFavorites: (state) => {
       state.favorites = []
+      state.favoritesLoaded = false
     },
   },
   extraReducers: (builder) => {
@@ -368,6 +371,7 @@ const outfitSlice = createSlice({
       // Fetch user favorites
       .addCase(fetchUserFavorites.fulfilled, (state, action) => {
         state.favorites = action.payload
+        state.favoritesLoaded = true
       })
       // Toggle favorite
       .addCase(toggleFavorite.fulfilled, (state, action) => {

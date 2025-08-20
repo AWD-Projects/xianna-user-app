@@ -43,18 +43,23 @@ async function getUserFavorites() {
     // Type assertion for the outfit data
     const outfit = favorite.outfits as any
     
-    // Get outfit image from storage
+    // Get outfit image from storage - get last uploaded image
     let imageUrl = '/placeholder-outfit.jpg'
     
     try {
       const { data: files } = await supabase.storage
         .from('Outfits')
-        .list(`uploads/${outfit.id}/imagen_principal`, { limit: 1 })
+        .list(`uploads/${outfit.id}/imagen_principal`, { 
+          limit: 100,
+          sortBy: { column: 'created_at', order: 'desc' }
+        })
 
       if (files && files.length > 0) {
+        // Get the last uploaded file (first in desc order)
+        const lastFile = files[0]
         imageUrl = supabase.storage
           .from('Outfits')
-          .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${files[0].name}`)
+          .getPublicUrl(`uploads/${outfit.id}/imagen_principal/${lastFile.name}`)
           .data.publicUrl
       }
     } catch (error) {
