@@ -20,17 +20,6 @@ interface OutfitState {
     totalPages: number
     totalOutfits: number
   }
-  cache: {
-    stylesLoaded: boolean
-    occasionsLoaded: boolean
-    stylesLastFetch: number | null
-    occasionsLastFetch: number | null
-  }
-  pendingRequests: {
-    styles: boolean
-    occasions: boolean
-    outfits: boolean
-  }
 }
 
 const initialState: OutfitState = {
@@ -50,17 +39,6 @@ const initialState: OutfitState = {
     page: 1,
     totalPages: 1,
     totalOutfits: 0
-  },
-  cache: {
-    stylesLoaded: false,
-    occasionsLoaded: false,
-    stylesLastFetch: null,
-    occasionsLastFetch: null
-  },
-  pendingRequests: {
-    styles: false,
-    occasions: false,
-    outfits: false
   }
 }
 
@@ -250,25 +228,7 @@ export const fetchOutfitById = createAsyncThunk(
 
 export const fetchStyles = createAsyncThunk(
   'outfit/fetchStyles',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { outfit: OutfitState }
-    const { cache, pendingRequests } = state.outfit
-    
-    // Check if request is already pending
-    if (pendingRequests.styles) {
-      return rejectWithValue('Styles request already pending')
-    }
-    
-    // Check if styles are already loaded and fresh (within 5 minutes)
-    const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-    const now = Date.now()
-    
-    if (cache.stylesLoaded && 
-        cache.stylesLastFetch && 
-        (now - cache.stylesLastFetch) < CACHE_DURATION) {
-      return rejectWithValue('Styles already loaded and fresh')
-    }
-
+  async () => {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('estilos')
@@ -282,25 +242,7 @@ export const fetchStyles = createAsyncThunk(
 
 export const fetchOccasions = createAsyncThunk(
   'outfit/fetchOccasions',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { outfit: OutfitState }
-    const { cache, pendingRequests } = state.outfit
-    
-    // Check if request is already pending
-    if (pendingRequests.occasions) {
-      return rejectWithValue('Occasions request already pending')
-    }
-    
-    // Check if occasions are already loaded and fresh (within 5 minutes)
-    const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-    const now = Date.now()
-    
-    if (cache.occasionsLoaded && 
-        cache.occasionsLastFetch && 
-        (now - cache.occasionsLastFetch) < CACHE_DURATION) {
-      return rejectWithValue('Occasions already loaded and fresh')
-    }
-
+  async () => {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('ocasion')
@@ -419,40 +361,12 @@ const outfitSlice = createSlice({
         state.error = action.error.message || 'Error al cargar outfit'
       })
       // Fetch styles
-      .addCase(fetchStyles.pending, (state) => {
-        state.pendingRequests.styles = true
-      })
       .addCase(fetchStyles.fulfilled, (state, action) => {
         state.styles = action.payload
-        state.cache.stylesLoaded = true
-        state.cache.stylesLastFetch = Date.now()
-        state.pendingRequests.styles = false
-      })
-      .addCase(fetchStyles.rejected, (state, action) => {
-        state.pendingRequests.styles = false
-        // Don't update loading state for cache rejections
-        if (action.payload !== 'Styles already loaded and fresh' && 
-            action.payload !== 'Styles request already pending') {
-          state.error = action.error.message || 'Error al cargar estilos'
-        }
       })
       // Fetch occasions
-      .addCase(fetchOccasions.pending, (state) => {
-        state.pendingRequests.occasions = true
-      })
       .addCase(fetchOccasions.fulfilled, (state, action) => {
         state.occasions = action.payload
-        state.cache.occasionsLoaded = true
-        state.cache.occasionsLastFetch = Date.now()
-        state.pendingRequests.occasions = false
-      })
-      .addCase(fetchOccasions.rejected, (state, action) => {
-        state.pendingRequests.occasions = false
-        // Don't update loading state for cache rejections
-        if (action.payload !== 'Occasions already loaded and fresh' &&
-            action.payload !== 'Occasions request already pending') {
-          state.error = action.error.message || 'Error al cargar ocasiones'
-        }
       })
       // Fetch user favorites
       .addCase(fetchUserFavorites.fulfilled, (state, action) => {

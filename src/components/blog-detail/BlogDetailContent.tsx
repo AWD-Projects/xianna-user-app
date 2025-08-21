@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import Image from 'next/image'
@@ -48,36 +48,21 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
   const categoryColor = categoryColors[blog.id_categoria % categoryColors.length]
   const readingTime = Math.ceil(blog.contenido.length / 200) // Estimate reading time
 
-  // Memoized function to load user rating
-  const loadUserRating = useCallback(() => {
+  // Fetch user's existing rating when component mounts
+  useEffect(() => {
     if (user && !userRatings[blog.id]) {
       dispatch(fetchUserBlogRating({ 
         blogId: blog.id, 
         userId: user.email || user.id 
       }))
-    }
-  }, [user, blog.id, userRatings, dispatch])
-
-  // Memoized function to load guest rating
-  const loadGuestRating = useCallback(() => {
-    if (!user) {
+    } else if (!user) {
       // Check guest ratings from localStorage
       const guestRatings = JSON.parse(localStorage.getItem('guestBlogRatings') || '{}')
       if (guestRatings[blog.id]) {
         setGuestRating(guestRatings[blog.id])
       }
     }
-  }, [user, blog.id])
-
-  // Fetch user's existing rating when component mounts
-  useEffect(() => {
-    loadUserRating()
-  }, [loadUserRating])
-
-  // Load guest rating when component mounts
-  useEffect(() => {
-    loadGuestRating()
-  }, [loadGuestRating])
+  }, [user, blog.id, userRatings, dispatch])
 
   const handleRating = async (rating: number) => {
     setIsRating(true)

@@ -14,13 +14,6 @@ interface BlogState {
     totalPages: number
     totalBlogs: number
   }
-  cache: {
-    categoriesLoaded: boolean
-    categoriesLastFetch: number | null
-  }
-  pendingRequests: {
-    categories: boolean
-  }
 }
 
 const initialState: BlogState = {
@@ -34,13 +27,6 @@ const initialState: BlogState = {
     page: 1,
     totalPages: 1,
     totalBlogs: 0
-  },
-  cache: {
-    categoriesLoaded: false,
-    categoriesLastFetch: null
-  },
-  pendingRequests: {
-    categories: false
   }
 }
 
@@ -171,25 +157,7 @@ export const fetchBlogById = createAsyncThunk(
 
 export const fetchBlogCategories = createAsyncThunk(
   'blog/fetchBlogCategories',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { blog: BlogState }
-    const { cache, pendingRequests } = state.blog
-    
-    // Check if request is already pending
-    if (pendingRequests.categories) {
-      return rejectWithValue('Categories request already pending')
-    }
-    
-    // Check if categories are already loaded and fresh (within 10 minutes)
-    const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes
-    const now = Date.now()
-    
-    if (cache.categoriesLoaded && 
-        cache.categoriesLastFetch && 
-        (now - cache.categoriesLastFetch) < CACHE_DURATION) {
-      return rejectWithValue('Categories already loaded and fresh')
-    }
-
+  async () => {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('categoria_blog')
@@ -308,22 +276,8 @@ const blogSlice = createSlice({
         state.error = action.error.message || 'Error al cargar blog'
       })
       // Fetch categories
-      .addCase(fetchBlogCategories.pending, (state) => {
-        state.pendingRequests.categories = true
-      })
       .addCase(fetchBlogCategories.fulfilled, (state, action) => {
         state.categories = action.payload
-        state.cache.categoriesLoaded = true
-        state.cache.categoriesLastFetch = Date.now()
-        state.pendingRequests.categories = false
-      })
-      .addCase(fetchBlogCategories.rejected, (state, action) => {
-        state.pendingRequests.categories = false
-        // Don't update loading state for cache rejections
-        if (action.payload !== 'Categories already loaded and fresh' &&
-            action.payload !== 'Categories request already pending') {
-          state.error = action.error.message || 'Error al cargar categorías'
-        }
       })
       // Fetch user blog rating
       .addCase(fetchUserBlogRating.fulfilled, (state, action) => {
