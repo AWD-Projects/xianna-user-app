@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import Cookies from 'js-cookie'
@@ -19,54 +19,63 @@ interface BlogGridProps {
 
 export function BlogGrid({ category, page }: BlogGridProps) {
   const dispatch = useDispatch<AppDispatch>()
-  const { blogs, categories, loading, pagination } = useSelector((state: RootState) => state.blog)
+  const { blogs, categories, loading, pagination, cache } = useSelector((state: RootState) => state.blog)
   const { user } = useSelector((state: RootState) => state.auth)
 
-  useEffect(() => {
-    dispatch(fetchBlogCategories())
-  }, [dispatch])
+  // Memoized function to show blog tip
+  const showBlogTip = useCallback(() => {
+    if (!user?.email) return
 
+    const hasSeenBlogTip = Cookies.get('xianna-blog-tip')
+    
+    if (!hasSeenBlogTip) {
+      const timer = setTimeout(() => {
+        toast('Entra a tu blog favorito y califícalo', {
+          duration: 8000,
+          action: {
+            label: <Check className="w-4 h-4" />,
+            onClick: () => {
+              Cookies.set('xianna-blog-tip', 'seen', { expires: 365 }) // 1 year
+              toast.dismiss()
+            }
+          },
+          style: {
+            background: 'white',
+            border: '1px solid #e5e7eb',
+            color: '#374151'
+          },
+          actionButtonStyle: {
+            backgroundColor: '#E61F93',
+            color: 'white',
+            fontWeight: '500',
+            padding: '6px',
+            minWidth: '32px',
+            height: '32px',
+            borderRadius: '6px'
+          }
+        })
+      }, 2000) // Show after 2 seconds
+      
+      return () => clearTimeout(timer)
+    }
+  }, [user?.email])
+
+  // Load categories only if not cached
+  useEffect(() => {
+    if (!cache.categoriesLoaded) {
+      dispatch(fetchBlogCategories())
+    }
+  }, [dispatch, cache.categoriesLoaded])
+
+  // Load blogs when category or page changes
   useEffect(() => {
     dispatch(fetchBlogs({ category: category === 'Todo' ? undefined : category, page }))
   }, [dispatch, category, page])
 
   // Show first-time blog tip
   useEffect(() => {
-    if (user?.email) {
-      const hasSeenBlogTip = Cookies.get('xianna-blog-tip')
-      
-      if (!hasSeenBlogTip) {
-        const timer = setTimeout(() => {
-          toast('Entra a tu blog favorito y califícalo', {
-            duration: 8000,
-            action: {
-              label: <Check className="w-4 h-4" />,
-              onClick: () => {
-                Cookies.set('xianna-blog-tip', 'seen', { expires: 365 }) // 1 year
-                toast.dismiss()
-              }
-            },
-            style: {
-              background: 'white',
-              border: '1px solid #e5e7eb',
-              color: '#374151'
-            },
-            actionButtonStyle: {
-              backgroundColor: '#E61F93',
-              color: 'white',
-              fontWeight: '500',
-              padding: '6px',
-              minWidth: '32px',
-              height: '32px',
-              borderRadius: '6px'
-            }
-          })
-        }, 2000) // Show after 2 seconds
-        
-        return () => clearTimeout(timer)
-      }
-    }
-  }, [user?.email])
+    return showBlogTip()
+  }, [showBlogTip])
 
   if (loading) {
     return (

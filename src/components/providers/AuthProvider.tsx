@@ -18,7 +18,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const initialLoadRef = useRef(true)
   const lastEventRef = useRef<string>('')
+  const userDataLoadingRef = useRef<string | null>(null)
   const sessionMonitor = SessionMonitor.getInstance()
+
+  // Centralized function to load user data with deduplication
+  const loadUserData = async (userEmail: string, showNotification = false) => {
+    // Prevent duplicate requests for the same user
+    if (userDataLoadingRef.current === userEmail) {
+      return
+    }
+    
+    userDataLoadingRef.current = userEmail
+    
+    try {
+      // Load user data in parallel to optimize performance
+      await Promise.all([
+        dispatch(fetchUserProfile(userEmail)),
+        dispatch(fetchUserFavorites(userEmail))
+      ])
+      
+      if (showNotification && !initialLoadRef.current) {
+        toast.success('¡Bienvenid@ de vuelta!', {
+          description: 'Has iniciado sesión exitosamente',
+          duration: 4000,
+        })
+      }
+      
+      // Start session monitoring
+      sessionMonitor.startMonitoring()
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      userDataLoadingRef.current = null
+    }
+  }
 
   useEffect(() => {
     // Get initial session
@@ -26,11 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         dispatch(setUser(session.user))
-        dispatch(fetchUserProfile(session.user.email!))
-        dispatch(fetchUserFavorites(session.user.email!))
-        
-        // Start session monitoring for existing sessions
-        sessionMonitor.startMonitoring()
+        await loadUserData(session.user.email!)
         
         // Don't show notification on initial page load
         initialLoadRef.current = false
@@ -51,28 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (event === 'SIGNED_IN' && session?.user) {
           dispatch(setUser(session.user))
-          dispatch(fetchUserProfile(session.user.email!))
-          dispatch(fetchUserFavorites(session.user.email!))
-          
-          // Show login success notification (but not on initial load)
-          if (!initialLoadRef.current) {
-            toast.success('¡Bienvenid@ de vuelta!', {
-              description: 'Has iniciado sesión exitosamente',
-              duration: 4000,
-              icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-              style: {
-                background: '#4ade80',
-                color: 'white',
-                border: 'none'
-              }
-            })
-          }
-          
-          // Start session monitoring
-          sessionMonitor.startMonitoring()
+          await loadUserData(session.user.email!, true)
         } else if (event === 'SIGNED_OUT') {
           dispatch(setUser(null))
           dispatch(clearFavorites())
+          userDataLoadingRef.current = null
           
           // Stop session monitoring
           sessionMonitor.stopMonitoring()
@@ -100,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
       sessionMonitor.stopMonitoring()
+      userDataLoadingRef.current = null
     }
   }, [dispatch, supabase, sessionMonitor])
 

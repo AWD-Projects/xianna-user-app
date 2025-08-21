@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import Cookies from 'js-cookie'
@@ -26,52 +26,64 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
     styles: allStyles, 
     occasions: allOccasions, 
     loading,
-    pagination 
+    pagination,
+    cache 
   } = useSelector((state: RootState) => state.outfit)
 
-  // Show first-time favorites tip
-  useEffect(() => {
-    if (user?.email) {
-      const hasSeenFavoritesTip = Cookies.get('xianna-favorites-tip')
-      
-      if (!hasSeenFavoritesTip) {
-        const timer = setTimeout(() => {
-          toast('Haz clic en el corazón para guardar tus outfits favoritos', {
-            duration: 8000,
-            action: {
-              label: <Check className="w-4 h-4" />,
-              onClick: () => {
-                Cookies.set('xianna-favorites-tip', 'seen', { expires: 365 }) // 1 year
-                toast.dismiss()
-              }
-            },
-            style: {
-              background: 'white',
-              border: '1px solid #e5e7eb',
-              color: '#374151'
-            },
-            actionButtonStyle: {
-              backgroundColor: '#E61F93',
-              color: 'white',
-              fontWeight: '500',
-              padding: '6px',
-              minWidth: '32px',
-              height: '32px',
-              borderRadius: '6px'
+  // Memoized function to show favorites tip
+  const showFavoritesTip = useCallback(() => {
+    if (!user?.email) return
+
+    const hasSeenFavoritesTip = Cookies.get('xianna-favorites-tip')
+    
+    if (!hasSeenFavoritesTip) {
+      const timer = setTimeout(() => {
+        toast('Haz clic en el corazón para guardar tus outfits favoritos', {
+          duration: 8000,
+          action: {
+            label: <Check className="w-4 h-4" />,
+            onClick: () => {
+              Cookies.set('xianna-favorites-tip', 'seen', { expires: 365 }) // 1 year
+              toast.dismiss()
             }
-          })
-        }, 2000) // Show after 2 seconds
-        
-        return () => clearTimeout(timer)
-      }
+          },
+          style: {
+            background: 'white',
+            border: '1px solid #e5e7eb',
+            color: '#374151'
+          },
+          actionButtonStyle: {
+            backgroundColor: '#E61F93',
+            color: 'white',
+            fontWeight: '500',
+            padding: '6px',
+            minWidth: '32px',
+            height: '32px',
+            borderRadius: '6px'
+          }
+        })
+      }, 2000) // Show after 2 seconds
+      
+      return () => clearTimeout(timer)
     }
   }, [user?.email])
 
+  // Show first-time favorites tip
   useEffect(() => {
-    dispatch(fetchStyles())
-    dispatch(fetchOccasions())
-  }, [dispatch])
+    return showFavoritesTip()
+  }, [showFavoritesTip])
 
+  // Load styles and occasions only if not cached
+  useEffect(() => {
+    if (!cache.stylesLoaded) {
+      dispatch(fetchStyles())
+    }
+    if (!cache.occasionsLoaded) {
+      dispatch(fetchOccasions())
+    }
+  }, [dispatch, cache.stylesLoaded, cache.occasionsLoaded])
+
+  // Load outfits when filters or page change
   useEffect(() => {
     dispatch(fetchOutfits({ styles, occasions, page }))
   }, [dispatch, styles, occasions, page])
