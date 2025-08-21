@@ -96,43 +96,45 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
         <Card className="lg:col-span-2">
           <CardContent className="p-8">
             {/* Header Section */}
-            <div className="mb-6 flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                  Información Personal
-                </h2>
-                <p className="text-gray-600">Tus datos y preferencias</p>
-              </div>
-              <div className="flex gap-2">
-                {!isEditing ? (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    Editar
-                  </Button>
-                ) : (
-                  <div className="flex gap-2">
+            <div className="mb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    Información Personal
+                  </h2>
+                  <p className="text-gray-600">Tus datos y preferencias</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                  {!isEditing ? (
                     <Button
-                      onClick={handleSave}
-                      disabled={isLoading}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                    >
-                      <Save className="w-4 h-4" />
-                      {isLoading ? 'Guardando...' : 'Guardar'}
-                    </Button>
-                    <Button
-                      onClick={handleCancel}
+                      onClick={() => setIsEditing(true)}
                       variant="outline"
-                      className="flex items-center gap-2"
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
-                      <X className="w-4 h-4" />
-                      Cancelar
+                      <Edit2 className="w-4 h-4" />
+                      Editar
                     </Button>
-                  </div>
-                )}
+                  ) : (
+                    <>
+                      <Button
+                        onClick={handleSave}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                      >
+                        <Save className="w-4 h-4" />
+                        {isLoading ? 'Guardando...' : 'Guardar'}
+                      </Button>
+                      <Button
+                        onClick={handleCancel}
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancelar
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

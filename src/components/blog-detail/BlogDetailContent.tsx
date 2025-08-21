@@ -129,13 +129,22 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) {
+      // If date is null, use today's date
+      return new Date().toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    }
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     })
   }
+  console.log('BlogDetailContent rendered with blog:', blog)
 
   return (
     <article className="max-w-4xl mx-auto">
@@ -155,20 +164,22 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
           {blog.descripcion}
         </p>
         
-        <div className="flex items-center justify-center gap-4 text-gray-600 mb-6">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4 text-gray-600 mb-6">
+          <div className="flex items-center justify-center gap-2">
             <User className="w-4 h-4" />
             <span className="font-medium">Por Betsabe Calatayud</span>
           </div>
-          <span className="text-gray-400">•</span>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span>{formatDate(blog.created_at)}</span>
-          </div>
-          <span className="text-gray-400">•</span>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>{readingTime} min</span>
+          
+          <div className="flex items-center justify-center gap-4 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm sm:text-base">{formatDate(blog.created_at)}</span>
+            </div>
+            <span className="text-gray-400 hidden sm:inline">•</span>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm sm:text-base">{readingTime} min</span>
+            </div>
           </div>
         </div>
 

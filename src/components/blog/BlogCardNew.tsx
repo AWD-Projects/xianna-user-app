@@ -121,7 +121,11 @@ export function BlogCardNew({ blog }: BlogCardProps) {
           {/* Publication Date */}
           <div className="pt-2 border-t border-gray-100">
             <p className="text-xs text-gray-400">
-              {new Date(blog.created_at).toLocaleDateString('es-ES', {
+              {blog.created_at ? new Date(blog.created_at).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              }) : new Date().toLocaleDateString('es-ES', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'

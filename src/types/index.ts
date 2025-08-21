@@ -54,6 +54,7 @@ export interface Outfit {
   created_at: string
   updated_at: string
   ocasion?: string
+  advisor_id?: number | null
   estilos?: {
     id: number
     tipo: string
@@ -109,4 +110,20 @@ export interface Favorite {
   usuario: string
   outfit: number
   created_at: string
+}
+
+export interface Advisor {
+  id: number
+  created_at: string
+  nombre: string
+  correo: string
+  genero: string
+  especialidad: string
+  anos_experiencia: number
+  biografia: string
+  contact_link: string
+  portfolio_url: string
+  pais: string
+  estado: string
+  activo: boolean
 }

@@ -117,7 +117,7 @@ export function BlogCardModern({ blog }: BlogCardProps) {
               </div>
               <div className="flex items-center gap-1 text-gray-500">
                 <Calendar className="w-4 h-4" />
-                <span>{new Date(blog.created_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+                <span>{blog.created_at ? new Date(blog.created_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : new Date().toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
               </div>
             </div>
 

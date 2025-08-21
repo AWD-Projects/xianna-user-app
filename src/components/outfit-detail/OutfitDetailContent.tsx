@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { Heart, Share2, ShoppingBag, Sparkles, X } from 'lucide-react'
+import { Heart, Share2, ShoppingBag, Sparkles, X, User, Mail, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
@@ -13,8 +13,16 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import type { AppDispatch, RootState } from '@/store'
+import { createClient } from '@/lib/supabase/client'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog'
 
-import type { Outfit, Prenda } from '@/types'
+import type { Outfit, Prenda, Advisor } from '@/types'
 
 interface OutfitDetailContentProps {
   outfit: Outfit
@@ -24,12 +32,45 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [advisor, setAdvisor] = useState<Advisor | null>(null)
+  const [advisorLoading, setAdvisorLoading] = useState(false)
+  const [showAdvisorDialog, setShowAdvisorDialog] = useState(false)
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
   const { favorites } = useSelector((state: RootState) => state.outfit)
   
   const isFavorite = favorites.includes(outfit.id)
+
+  useEffect(() => {
+    const fetchAdvisor = async () => {
+      if (!outfit.advisor_id) return
+      
+      setAdvisorLoading(true)
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('advisors')
+          .select('*')
+          .eq('id', outfit.advisor_id)
+          .eq('activo', true)
+          .single()
+
+        if (error) {
+          console.error('Error fetching advisor:', error)
+          return
+        }
+
+        setAdvisor(data)
+      } catch (error) {
+        console.error('Error fetching advisor:', error)
+      } finally {
+        setAdvisorLoading(false)
+      }
+    }
+
+    fetchAdvisor()
+  }, [outfit.advisor_id])
 
   const handleFavoriteToggle = async () => {
     if (!user) {
@@ -89,7 +130,7 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12 max-w-7xl mx-auto">
       {/* Image Section */}
       <div className="space-y-4">
         <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100">
@@ -167,6 +208,7 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
             <span>{outfit.favoritos} me gusta</span>
           </div>
         </div>
+
       </div>
 
       {/* Content Section */}
@@ -199,9 +241,28 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
             )}
           </div>
 
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-            {outfit.nombre}
-          </h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
+              {outfit.nombre}
+            </h1>
+
+            {/* Author Section */}
+            {(advisor || advisorLoading) && (
+              <div className="flex items-start gap-2 text-sm text-gray-600">
+                <span>por</span>
+                {advisorLoading ? (
+                  <div className="animate-pulse h-4 bg-gray-200 rounded w-20"></div>
+                ) : advisor ? (
+                  <button
+                    onClick={() => setShowAdvisorDialog(true)}
+                    className="text-[#E61F93] hover:text-[#E61F93]/80 font-medium transition-colors underline"
+                  >
+                    {advisor.nombre}
+                  </button>
+                ) : null}
+              </div>
+            )}
+          </div>
 
           {outfit.precio && (
             <div className="text-2xl font-bold text-[#E61F93]">
@@ -212,7 +273,6 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
 
         {/* Description */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Descripción</h2>
           <p className="text-gray-600 leading-relaxed text-lg">
             {outfit.descripcion}
           </p>
@@ -229,6 +289,7 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
             </div>
           </div>
         )}
+
 
         {/* Prendas Section */}
         {outfit.prendas && outfit.prendas.length > 0 && (
@@ -317,6 +378,86 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
           )}
         </div>
       </div>
+
+      {/* Advisor Dialog */}
+      <Dialog open={showAdvisorDialog} onOpenChange={setShowAdvisorDialog}>
+        <DialogContent className="max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+          <DialogClose onClose={() => setShowAdvisorDialog(false)} />
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              Asesor de moda
+            </DialogTitle>
+          </DialogHeader>
+          
+          {advisor && (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900">{advisor.nombre}</h4>
+                  <p className="text-sm text-gray-600">{advisor.especialidad}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="font-medium">Experiencia:</span>
+                    <span>{advisor.anos_experiencia} años</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="font-medium">Ubicación:</span>
+                    <span>{advisor.estado}, {advisor.pais}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {advisor.biografia && (
+                <div className="space-y-2">
+                  <h5 className="font-medium text-gray-900">Biografía</h5>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {advisor.biografia}
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                {advisor.correo && (
+                  <a
+                    href={`mailto:${advisor.correo}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Contactar por email
+                  </a>
+                )}
+                
+                {advisor.portfolio_url && (
+                  <a
+                    href={advisor.portfolio_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-[#E61F93]/10 text-[#E61F93] hover:bg-[#E61F93]/20 rounded-lg transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Ver portfolio
+                  </a>
+                )}
+                
+                {advisor.contact_link && advisor.contact_link !== advisor.portfolio_url && (
+                  <a
+                    href={advisor.contact_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-[#FDE12D]/20 text-gray-700 hover:bg-[#FDE12D]/30 rounded-lg transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Más información
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
