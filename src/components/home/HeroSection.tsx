@@ -66,7 +66,7 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button
-              onClick={() => router.push('/auth/login')}
+              onClick={() => router.push('/formulario')}
               className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white border-0 rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transition-all duration-300 hover:scale-105"
             >
               <Sparkles className="w-5 h-5 mr-2" />

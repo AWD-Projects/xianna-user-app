@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import Cookies from 'js-cookie'
@@ -9,7 +9,7 @@ import { CatalogFilter } from './CatalogFilter'
 import { CatalogSkeleton } from './CatalogSkeleton'
 import { CatalogPagination } from './CatalogPagination'
 import { fetchOutfits, fetchStyles, fetchOccasions } from '@/store/slices/outfitSlice'
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import type { AppDispatch, RootState } from '@/store'
 
 interface CatalogGridProps {
@@ -28,6 +28,9 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
     loading,
     pagination 
   } = useSelector((state: RootState) => state.outfit)
+
+  // 👇 Mostrar el CTA siempre al cargar; si el usuario lo cierra, se oculta sólo en esta sesión/página
+  const [showStyleCTA, setShowStyleCTA] = useState(true)
 
   useEffect(() => {
     if (user?.email) {
@@ -95,8 +98,37 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
         selectedStyles={styles}
         selectedOccasions={occasions}
       />
+    
+      {/* CTA: aparece siempre al cargar; se puede cerrar (no persiste) */}
+      {showStyleCTA && (
+        <div className="relative rounded-full bg-pink-50/70 border border-pink-200/60 px-4 py-2 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
+          {/* botón cerrar (solo oculta en esta vista) */}
+          <button
+            type="button"
+            aria-label="Ocultar recomendación de estilo"
+            onClick={() => setShowStyleCTA(false)}
+            className="absolute -top-2 -right-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-pink-200 bg-white text-pink-700 hover:bg-pink-50 shadow-sm"
+          >
+            <X className="h-4 w-4" />
+          </button>
 
-      {/* 👇 Cambio clave: 2 columnas por defecto (mobile) */}
+          <div className="flex items-center gap-2">
+            <span className="text-pink-600 text-lg">🎯</span>
+            <span className="text-sm text-pink-900/80">
+              Descubre tu estilo personal ¡en 5 minutos!
+            </span>
+          </div>
+
+          <a
+            href="/descubre-tu-estilo"
+            className="ml-3 inline-flex items-center rounded-full bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium px-3 py-1 transition-colors"
+            aria-label="Iniciar formulario para descubrir tu estilo"
+          >
+            Iniciar
+          </a>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
         {outfits.map((outfit) => (
           <OutfitCard key={outfit.id} outfit={outfit} />

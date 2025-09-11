@@ -6,7 +6,7 @@ import {
   Palette, 
   Brain, 
   BookOpen, 
-  Heart, 
+  Bookmark, 
   Sparkles,
   Target,
   Zap
@@ -49,7 +49,7 @@ const features = [
     bgColor: "bg-yellow-50"
   },
   {
-    icon: Heart,
+    icon: Bookmark,
     title: "Hecho en México",
     description: "Celebramos la diversidad y el talento mexicano con marcas locales y diseñadores nacionales.",
     color: "from-red-500 to-red-600",

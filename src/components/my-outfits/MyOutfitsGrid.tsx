@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, Eye, Sparkles, Star } from 'lucide-react'
+import { Bookmark, Eye, Sparkles, Star } from 'lucide-react'
 import { toggleFavorite, fetchUserFavorites } from '@/store/slices/outfitSlice'
 import type { AppDispatch, RootState } from '@/store'
 
@@ -64,7 +64,7 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
     return (
       <div className="text-center py-16">
         <div className="w-24 h-24 bg-[#E61F93]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Heart className="w-12 h-12 text-[#E61F93]" />
+          <Bookmark className="w-12 h-12 text-[#E61F93]" />
         </div>
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
           Aún no tienes outfits favoritos
@@ -144,7 +144,7 @@ function OutfitCard({ outfit, user, dispatch }: {
           {isToggling ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Heart className="w-4 h-4 fill-current" />
+            <Bookmark className="w-4 h-4 fill-current" />
           )}
         </Button>
       )}

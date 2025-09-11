@@ -8,7 +8,7 @@ import {
   LogIn, 
   ArrowRight,
   Shield,
-  Heart,
+  Bookmark,
   Star,
   CheckCircle
 } from 'lucide-react'
@@ -20,7 +20,7 @@ const authBenefits = [
     description: "Guarda tu estilo descubierto y accede a recomendaciones únicas."
   },
   {
-    icon: Heart,
+    icon: Bookmark,
     title: "Favoritos Guardados",
     description: "Marca y guarda tus outfits favoritos para acceso rápido."
   },

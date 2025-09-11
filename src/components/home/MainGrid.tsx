@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
   Sparkles,
-  Heart,
+  Bookmark,
   Instagram,
   Palette,
   Sparkles as CatalogIcon,
@@ -89,7 +89,7 @@ export function MainGrid(): JSX.Element {
         <div className="relative z-10 h-full p-8 md:p-10 flex flex-col">
           <Badge className="bg-white/10 border-white/20 text-white/90">
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-md bg-white/20">
-              <Heart className="h-3 w-3" />
+              <Bookmark className="h-3 w-3" />
             </span>
             XIANNA
           </Badge>
@@ -177,7 +177,7 @@ export function MainGrid(): JSX.Element {
           <div className="absolute inset-0 bg-white/5 mix-blend-soft-light pointer-events-none" />
           <div className="relative h-full flex flex-col">
             <IconChip className="bg-white/20">
-              <Heart className="h-5 w-5" />
+              <Bookmark className="h-5 w-5" />
             </IconChip>
 
             <div className="mt-auto space-y-1">

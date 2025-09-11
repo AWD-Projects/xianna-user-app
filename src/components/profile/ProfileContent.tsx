@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { StyleSummaryGenerator } from '@/components/ui/style-summary-generator'
-import { Sparkles, Heart, Book, ShoppingBag, Edit2, Save, X } from 'lucide-react'
+import { Sparkles, Bookmark, Book, ShoppingBag, Edit2, Save, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { User as AuthUser } from '@supabase/supabase-js'
 import type { UserProfile, Style } from '@/types'
@@ -403,7 +403,7 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
             <Link href="/mis-outfits">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-[#E61F93]/10 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Heart className="w-8 h-8 text-[#E61F93]" />
+                  <Bookmark className="w-8 h-8 text-[#E61F93]" />
                 </div>
                 <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-[#E61F93] transition-colors">
                   Mis Favoritos

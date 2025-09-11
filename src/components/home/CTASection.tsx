@@ -6,7 +6,7 @@ import {
   ArrowRight, 
   Sparkles, 
   CheckCircle, 
-  Heart,
+  Bookmark,
   Star
 } from 'lucide-react'
 
@@ -37,7 +37,7 @@ export function CTASection() {
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-8 right-8">
-                <Heart className="w-16 h-16" />
+                <Bookmark className="w-16 h-16" />
               </div>
               <div className="absolute bottom-8 left-8">
                 <Sparkles className="w-20 h-20" />
