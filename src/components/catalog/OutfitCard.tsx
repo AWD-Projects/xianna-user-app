@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, Eye, Star } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Eye, Star, Contact } from 'lucide-react'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
 import type { Outfit } from '@/types'
 import type { AppDispatch, RootState } from '@/store'
@@ -22,23 +22,19 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
   const { favorites } = useSelector((state: RootState) => state.outfit)
   const [isToggling, setIsToggling] = useState(false)
   const [imageError, setImageError] = useState(false)
-  
-  // Debug: Log outfit data
-  console.log('Outfit data:', { id: outfit.id, estilo: outfit.estilo, nombre: outfit.nombre })
-  
+
   const isFavorited = favorites.includes(outfit.id)
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
     if (!user?.email || isToggling) return
-    
+
     setIsToggling(true)
     try {
-      await dispatch(toggleFavorite({ 
-        userEmail: user.email, 
-        outfitId: outfit.id 
+      await dispatch(toggleFavorite({
+        userEmail: user.email,
+        outfitId: outfit.id
       })).unwrap()
     } catch (error) {
       console.error('Error toggling favorite:', error)
@@ -48,15 +44,19 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
   }
 
   return (
-    <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative">
-      {/* Heart Button Over Image */}
+    <Card
+      data-advisor-id={outfit.advisor_id ?? ''}
+      className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative"
+    >
+      {/* Save/Bookmark button over image (oculto en 2 cols) */}
       {user && (
         <Button
           variant="ghost"
           size="icon"
-          className={`absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md ${
-            isFavorited 
-              ? 'bg-[#E61F93] text-white hover:bg-[#E61F93]/90' 
+          aria-label={isFavorited ? 'Quitar de guardados' : 'Guardar outfit'}
+          className={`hidden md:inline-flex absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md ${
+            isFavorited
+              ? 'bg-[#E61F93] text-white hover:bg-[#E61F93]/90'
               : 'bg-white/90 text-gray-600 hover:bg-white backdrop-blur-sm'
           }`}
           onClick={handleToggleFavorite}
@@ -64,14 +64,14 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
         >
           {isToggling ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : isFavorited ? (
+            <BookmarkCheck className="w-4 h-4" />
           ) : (
-            <Heart 
-              className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} 
-            />
+            <Bookmark className="w-4 h-4" />
           )}
         </Button>
       )}
-      
+
       {/* Clickable Image Section */}
       <Link href={`/catalogo/${outfit.id}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
@@ -113,7 +113,7 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
           </div>
         </div>
       </Link>
-      
+
       {/* Content Section - Non-clickable */}
       <CardContent className="p-4">
         <div className="space-y-3">
@@ -122,17 +122,32 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
             <h3 className="font-bold text-lg mb-1 line-clamp-1 text-gray-900">
               {outfit.nombre}
             </h3>
-            <p className="text-gray-600 text-sm line-clamp-2">
+            <p
+              className="
+                hidden md:block text-gray-600 text-sm
+                md:overflow-hidden md:[display:-webkit-box]
+                md:[-webkit-line-clamp:2] md:[-webkit-box-orient:vertical]
+              "
+            >
               {outfit.descripcion}
             </p>
           </div>
-          
-          {/* Occasions */}
-          <div className="flex flex-wrap gap-1">
+
+          {/* Advisor ID (siempre visible) */}
+          <div className="mt-1">
+            <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">
+              <Contact className="w-3.5 h-3.5 text-gray-500" />
+              <span className="font-medium">Asesor:</span>
+              <span className="tabular-nums">{outfit.advisor_id ?? 'Anónimo'}</span>
+            </span>
+          </div>
+
+          {/* Occasions (oculto en 2 cols) */}
+          <div className="hidden md:flex flex-wrap gap-1">
             {outfit.ocasiones.slice(0, 2).map((ocasion, index) => (
-              <Badge 
-                key={index} 
-                variant="outline" 
+              <Badge
+                key={index}
+                variant="outline"
                 className="text-xs border-gray-200 text-gray-600"
               >
                 {ocasion}
@@ -144,11 +159,11 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
               </Badge>
             )}
           </div>
-          
-          {/* Bottom row with favorites count and action */}
-          <div className="flex items-center justify-between">
+
+          {/* Bottom row with saves count (oculto en 2 cols) */}
+          <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm text-gray-500">
-              <Heart className="w-4 h-4" />
+              <Bookmark className="w-4 h-4" />
               <span>{outfit.favoritos}</span>
             </div>
           </div>

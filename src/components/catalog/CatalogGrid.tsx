@@ -29,11 +29,9 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
     pagination 
   } = useSelector((state: RootState) => state.outfit)
 
-  // Show first-time favorites tip
   useEffect(() => {
     if (user?.email) {
       const hasSeenFavoritesTip = Cookies.get('xianna-favorites-tip')
-      
       if (!hasSeenFavoritesTip) {
         const timer = setTimeout(() => {
           toast('Haz clic en el corazón para guardar tus outfits favoritos', {
@@ -41,7 +39,7 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
             action: {
               label: <Check className="w-4 h-4" />,
               onClick: () => {
-                Cookies.set('xianna-favorites-tip', 'seen', { expires: 365 }) // 1 year
+                Cookies.set('xianna-favorites-tip', 'seen', { expires: 365 })
                 toast.dismiss()
               }
             },
@@ -60,8 +58,7 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
               borderRadius: '6px'
             }
           })
-        }, 2000) // Show after 2 seconds
-        
+        }, 2000)
         return () => clearTimeout(timer)
       }
     }
@@ -72,12 +69,10 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
     dispatch(fetchOccasions())
   }, [dispatch])
 
-  // Load outfits when filters or page change
   useEffect(() => {
     dispatch(fetchOutfits({ styles, occasions, page }))
   }, [dispatch, styles, occasions, page])
 
-  // Mostrar skeleton durante carga inicial o cuando hay cambios de filtros/paginación
   if (loading) {
     return (
       <div className="space-y-8">
@@ -100,8 +95,9 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
         selectedStyles={styles}
         selectedOccasions={occasions}
       />
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+
+      {/* 👇 Cambio clave: 2 columnas por defecto (mobile) */}
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
         {outfits.map((outfit) => (
           <OutfitCard key={outfit.id} outfit={outfit} />
         ))}
@@ -117,7 +113,6 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
         </div>
       )}
 
-      {/* Pagination */}
       {outfits.length > 0 && (
         <CatalogPagination
           currentPage={pagination.page}
