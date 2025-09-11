@@ -101,7 +101,7 @@ export function ResultsStep({ result, styles }: ResultsStepProps) {
           variant="outline"
           className="w-full border-2 border-[#00D1ED] text-[#00D1ED] hover:bg-[#00D1ED] hover:text-white py-4 text-lg font-semibold"
         >
-          Explorar catálogo
+          Encuentra tu outfit ideal
           <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </div>

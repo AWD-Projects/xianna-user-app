@@ -79,7 +79,7 @@ export function HeroSection() {
               onClick={() => router.push('/catalogo')}
               className="border-2 border-gray-300 text-gray-700 hover:border-pink-500 hover:text-pink-600 rounded-2xl px-8 py-6 text-lg font-semibold transition-all duration-300 hover:scale-105"
             >
-              Explorar catálogo
+              Encuentra tu outfit ideal
             </Button>
           </div>
         </div>

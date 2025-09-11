@@ -77,7 +77,7 @@ export function MyOutfitsGrid({ favorites }: MyOutfitsGridProps) {
           className="bg-[#E61F93] hover:bg-[#E61F93]/90 rounded-xl px-8"
           onClick={() => router.push('/catalogo')}
         >
-          Explorar catálogo
+          Encuentra tu outfit ideal
           <Sparkles className="w-4 h-4 ml-2" />
         </Button>
       </div>
