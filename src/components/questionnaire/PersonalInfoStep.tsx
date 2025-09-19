@@ -86,8 +86,7 @@ export function PersonalInfoStep({ onSubmit, initialData }: PersonalInfoStepProp
               <option value="">Selecciona tu género</option>
               <option value="femenino">Femenino</option>
               <option value="masculino">Masculino</option>
-              <option value="no-binario">No binario</option>
-              <option value="prefiero-no-decir">Prefiero no decir</option>
+              <option value="otro">Otro</option>
             </select>
             {errors.gender && (
               <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
