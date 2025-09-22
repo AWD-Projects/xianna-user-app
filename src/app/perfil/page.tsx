@@ -20,7 +20,7 @@ async function getUserData() {
   }
 
   // Get user profile
-  const profile = await getUserDetails(user.email)
+  const profile = await getUserDetails(user.email!)
 
   // Get user style if exists
   let styleData = null
