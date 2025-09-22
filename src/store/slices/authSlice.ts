@@ -36,20 +36,20 @@ export const signupUser = createAsyncThunk(
     const supabase = createClient()
     
     // First, check if email already exists in our user_details table
-    const { data: existingUser, error: checkError } = await supabase
-      .from('user_details')
-      .select('correo')
-      .eq('correo', email)
-      .maybeSingle()  // Use maybeSingle to avoid error when no row found
+    try {
+      const response = await fetch(`/api/user-details?email=${encodeURIComponent(email)}`)
+      const existingUser = response.ok ? await response.json() : null
     
-    if (checkError && checkError.code !== 'PGRST116') {
-      // PGRST116 is "not found" error, which is expected
-      console.error('Error checking existing user:', checkError)
+      if (existingUser) {
+        throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
+      }
+    } catch (fetchError) {
+      // If it's not a 404 error, there's a real problem
+      if (fetchError instanceof Error && !fetchError.message.includes('404')) {
+        console.error('Error checking existing user:', fetchError)
+      }
     }
     
-    if (existingUser) {
-      throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
-    }
     
     // Get the base URL for email redirect
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
@@ -79,16 +79,21 @@ export const signupUser = createAsyncThunk(
     // Create user profile only if signup was successful and we have a user
     if (data.user && data.user.id) {
       try {
-        const { error: profileError } = await supabase
-          .from('user_details')
-          .insert([{ correo: email, nombre: name }])
+        const profileResponse = await fetch('/api/user-details', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ correo: email, nombre: name })
+        })
         
-        if (profileError) {
+        if (!profileResponse.ok) {
+          const errorData = await profileResponse.json()
           // If profile creation fails due to duplicate email (unique constraint violation)
-          if (profileError.code === '23505' || profileError.message.includes('duplicate')) {
+          if (errorData.error && (errorData.error.includes('duplicate') || errorData.error.includes('23505'))) {
             throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
           }
-          throw profileError
+          throw new Error(errorData.error || 'Error creating profile')
         }
       } catch (profileError: any) {
         console.error('Profile creation failed:', profileError)

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getUserDetails } from '@/lib/server-user-details'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { ProfileContent } from '@/components/profile/ProfileContent'
 import { PendingQuestionnaireHandler } from '@/components/dashboard/PendingQuestionnaireHandler'
@@ -19,11 +20,7 @@ async function getUserData() {
   }
 
   // Get user profile
-  const { data: profile } = await supabase
-    .from('user_details')
-    .select('*')
-    .eq('correo', user.email)
-    .single()
+  const profile = await getUserDetails(user.email)
 
   // Get user style if exists
   let styleData = null

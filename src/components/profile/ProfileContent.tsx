@@ -31,10 +31,13 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
     
     setIsLoading(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('user_details')
-        .update({
+      const response = await fetch('/api/user-details', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo: user.email,
           nombre: editingProfile.nombre,
           estado: editingProfile.estado,
           genero: editingProfile.genero,
@@ -42,9 +45,12 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
           ocupacion: editingProfile.ocupacion,
           talla: editingProfile.talla
         })
-        .eq('correo', user.email)
+      })
       
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error updating profile')
+      }
       
       setIsEditing(false)
       router.refresh()

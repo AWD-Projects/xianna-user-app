@@ -24,31 +24,47 @@ const initialState: UserState = {
 export const fetchUserProfile = createAsyncThunk(
   'user/fetchUserProfile',
   async (email: string) => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('user_details')
-      .select('*')
-      .eq('correo', email)
-      .single()
+    try {
+      const response = await fetch(`/api/user-details?email=${encodeURIComponent(email)}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-    if (error) throw error
-    return data
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+      throw error
+    }
   }
 )
 
 export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
   async ({ email, updates }: { email: string; updates: Partial<UserProfile> }) => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('user_details')
-      .update(updates)
-      .eq('correo', email)
-      .select()
-      .single()
+    try {
+      const response = await fetch('/api/user-details', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          correo: email,
+          ...updates
+        })
+      })
 
-    if (error) throw error
-    return data
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error updating user profile:', error)
+      throw error
+    }
   }
 )
 
@@ -134,26 +150,41 @@ export const submitQuestionnaire = createAsyncThunk(
       }
     })
     
-    // Map form fields to database fields
-    const updates = {
-      nombre: personalData.name,
-      edad: personalData.age,
-      genero: personalData.gender,
-      ocupacion: personalData.occupation,
-      estado: personalData.state, // Send estado to estado column
-      talla: personalData.size,
-      tipo_estilo: mostSelectedStyleId,
-    }
-    
-    const { data, error } = await supabase
-      .from('user_details')
-      .update(updates)
-      .eq('correo', email)
-      .select()
-      .single()
+    try {
+      // Map form fields to database fields
+      const updates = {
+        correo: email, // Include email for upsert
+        nombre: personalData.name,
+        edad: personalData.age,
+        genero: personalData.gender,
+        ocupacion: personalData.occupation,
+        estado: personalData.state,
+        talla: personalData.size,
+        tipo_estilo: mostSelectedStyleId,
+      }
+      
+      // Use API route instead of direct Supabase call
+      const response = await fetch('/api/user-details', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates)
+      })
 
-    if (error) throw error
-    return data
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API error:', errorText)
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      return data
+    } catch (error) {
+      console.error('Error in submitQuestionnaire:', error)
+      throw error
+    }
   }
 )
 

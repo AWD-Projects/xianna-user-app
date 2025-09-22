@@ -6,21 +6,15 @@ import { createClient } from '@/lib/supabase/client'
  */
 export async function checkEmailExists(email: string): Promise<boolean> {
   try {
-    const supabase = createClient()
+    const response = await fetch(`/api/user-details?email=${encodeURIComponent(email)}`)
     
-    const { data, error } = await supabase
-      .from('user_details')
-      .select('correo')
-      .eq('correo', email)
-      .maybeSingle()
-    
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 is "not found" error, which means email doesn't exist (good)
-      console.error('Error checking email existence:', error)
-      return false // In case of error, allow the signup to proceed and handle it there
+    if (response.ok) {
+      return true // Email exists
+    } else if (response.status === 404 || response.status === 500) {
+      return false // Email doesn't exist or error occurred
     }
     
-    return !!data // Returns true if email exists, false otherwise
+    return false // Default to allowing signup
   } catch (error) {
     console.error('Error checking email existence:', error)
     return false // In case of error, allow the signup to proceed
