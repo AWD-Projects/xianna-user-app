@@ -1,37 +1,36 @@
-import { createServerClient } from '@supabase/ssr'
+// app/auth/confirm/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
-export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const origin = requestUrl.origin
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url)
+  const token_hash = url.searchParams.get('token_hash')
+  const type = (url.searchParams.get('type') || 'signup') as 'signup' | 'invite' | 'email_change'
 
-  if (code) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              request.cookies.set(name, value)
-            })
-          },
-        },
-      }
-    )
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error) {
-      // Email confirmed successfully, redirect to profile
-      return NextResponse.redirect(`${origin}/perfil?confirmed=true`)
-    }
+  if (!token_hash) {
+    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
   }
 
-  // Return the user to an error page or login with an error message
-  return NextResponse.redirect(`${origin}/auth/login?error=auth_callback_error`)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return req.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            req.cookies.set(name, value)
+          })
+        },
+      },
+    }
+  )
+
+  const { data, error } = await supabase.auth.verifyOtp({ type, token_hash })
+
+  if (error) {
+    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
+  }
+
+  return NextResponse.redirect(`${url.origin}/correo-confirmado`)
 }
