@@ -8,29 +8,43 @@ export async function GET(req: NextRequest) {
   const type = (url.searchParams.get('type') || 'signup') as 'signup' | 'invite' | 'email_change'
 
   if (!token_hash) {
-    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
+    return NextResponse.redirect(new URL('/auth/login?error=auth_callback_error', url))
   }
+
+  // 1) Crea un response "portador" para que Supabase pueda setear cookies ahí
+  const cookieCarrier = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return req.cookies.getAll() },
+        getAll() {
+          return req.cookies.getAll()
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            req.cookies.set(name, value)
+            cookieCarrier.cookies.set({ name, value, ...options })
           })
         },
       },
     }
   )
 
-  const { data, error } = await supabase.auth.verifyOtp({ type, token_hash })
+  // 2) Verifica el token y deja que supabase setee la sesión en cookieCarrier
+  const { error } = await supabase.auth.verifyOtp({ type, token_hash })
 
   if (error) {
-    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
+    // Propaga también los headers por si estabas a mitad de setear algo
+    const redirect = NextResponse.redirect(new URL('/auth/login?error=auth_callback_error', url))
+    redirect.headers.set('Set-Cookie', cookieCarrier.headers.get('Set-Cookie') ?? '')
+    return redirect
   }
 
-  return NextResponse.redirect(`${url.origin}/correo-confirmado`)
+  // 3) Redirige a /correo-confirmado **propagando Set-Cookie**
+  const successRedirect = NextResponse.redirect(new URL('/correo-confirmado', url))
+  const setCookie = cookieCarrier.headers.get('Set-Cookie')
+  if (setCookie) successRedirect.headers.set('Set-Cookie', setCookie)
+
+  return successRedirect
 }
