@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { PersonalInfoStep } from './PersonalInfoStep'
 import { QuestionStep } from './QuestionStep'
@@ -16,15 +14,15 @@ import { createClient } from '@/lib/supabase/client'
 import type { AppDispatch, RootState } from '@/store'
 
 export function StyleQuestionnaireForm() {
-  const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { questions, styles, loading } = useSelector((state: RootState) => state.user)
   const { user } = useSelector((state: RootState) => state.auth)
-  
+
   const [currentStep, setCurrentStep] = useState(0)
   const [personalData, setPersonalData] = useState({})
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [result, setResult] = useState<any>(null)
+  const [loadingUserData, setLoadingUserData] = useState(false)
 
   const questionsPerStep = 1 // Show one question at a time for better focus
   const questionSteps = Math.ceil(questions.length / questionsPerStep)
@@ -35,6 +33,40 @@ export function StyleQuestionnaireForm() {
     dispatch(fetchQuestionnaire())
     dispatch(fetchStyles())
   }, [dispatch])
+
+  // Auto-fill personal data for logged-in users
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.email && Object.keys(personalData).length === 0) {
+        setLoadingUserData(true)
+        try {
+          const response = await fetch(`/api/user-details?email=${encodeURIComponent(user.email)}`)
+          if (response.ok) {
+            const userData = await response.json()
+            console.log('[QUESTIONNAIRE] Auto-filling user data:', userData)
+
+            // Map user_details fields to questionnaire personal data format
+            const mappedData = {
+              name: userData.nombre || '',
+              age: userData.edad || '',
+              gender: userData.genero || '',
+              occupation: userData.ocupacion || '',
+              state: userData.estado || '',
+              size: userData.talla || ''
+            }
+
+            setPersonalData(mappedData)
+          }
+        } catch (error) {
+          console.error('[QUESTIONNAIRE] Error fetching user data:', error)
+        } finally {
+          setLoadingUserData(false)
+        }
+      }
+    }
+
+    fetchUserData()
+  }, [user, personalData])
 
   const handlePersonalDataSubmit = (data: any) => {
     setPersonalData(data)
@@ -147,13 +179,17 @@ export function StyleQuestionnaireForm() {
     return `Pregunta ${currentStep} de ${questionSteps}`
   }
 
-  if (loading) {
+  if (loading || loadingUserData) {
     return (
       <div className="max-w-3xl mx-auto">
         <div className="text-center py-16">
           <div className="w-16 h-16 bg-[#FDE12D] rounded-full mx-auto mb-6 animate-pulse" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Cargando cuestionario</h2>
-          <p className="text-gray-600">Preparando tu experiencia personalizada...</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {loadingUserData ? 'Cargando tu información' : 'Cargando cuestionario'}
+          </h2>
+          <p className="text-gray-600">
+            {loadingUserData ? 'Preparando tus datos...' : 'Preparando tu experiencia personalizada...'}
+          </p>
         </div>
       </div>
     )
@@ -197,10 +233,24 @@ export function StyleQuestionnaireForm() {
       <Card className="border-0 shadow-lg bg-white">
         <CardContent className="p-12">
           {currentStep === 0 && (
-            <PersonalInfoStep 
-              onSubmit={handlePersonalDataSubmit}
-              initialData={personalData}
-            />
+            <>
+              {user && Object.keys(personalData).length > 0 && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center text-green-800 text-sm">
+                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>
+                      Hemos precargado tu información. Puedes editarla si es necesario.
+                    </span>
+                    </div>
+                </div>
+              )}
+              <PersonalInfoStep
+                onSubmit={handlePersonalDataSubmit}
+                initialData={personalData}
+              />
+            </>
           )}
 
           {currentStep >= 1 && currentStep < totalSteps - 1 && (

@@ -39,13 +39,18 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <Image
-                src="/images/xianna.png"
-                alt="Xianna"
-                width={140}
-                height={42}
-                className="object-contain"
-              />
+              <button
+                onClick={() => router.push('/')}
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <Image
+                  src="/images/xianna.png"
+                  alt="Xianna"
+                  width={140}
+                  height={42}
+                  className="object-contain"
+                />
+              </button>
             </div>
             
             <p className="text-gray-600 leading-relaxed mb-6 max-w-md">

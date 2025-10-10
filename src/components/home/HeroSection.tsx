@@ -22,14 +22,19 @@ export function HeroSection() {
         <div className="max-w-4xl mx-auto text-center">
           {/* Brand */}
           <div className="flex items-center justify-center gap-4 mb-8">
-            <Image
-              src="/images/xianna.png"
-              alt="Xianna"
-              width={200}
-              height={60}
-              className="object-contain"
-              priority
-            />
+            <button
+              onClick={() => router.push('/')}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/images/xianna.png"
+                alt="Xianna"
+                width={200}
+                height={60}
+                className="object-contain"
+                priority
+              />
+            </button>
           </div>
 
           {/* Main Headline */}

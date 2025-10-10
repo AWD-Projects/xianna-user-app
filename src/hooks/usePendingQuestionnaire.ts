@@ -15,23 +15,32 @@ export function usePendingQuestionnaire() {
       if (pendingData) {
         try {
           const { personalData, answers } = JSON.parse(pendingData)
-          
+
+          console.log('[PENDING QUESTIONNAIRE] Submitting pending questionnaire for:', user.email)
+
           // Submit the questionnaire automatically
           dispatch(submitQuestionnaire({
             email: user.email,
             personalData,
             answers
           })).then(() => {
+            console.log('[PENDING QUESTIONNAIRE] Submission successful, clearing data and refreshing')
             // Clear pending data
             localStorage.removeItem('pendingQuestionnaire')
-            // Redirect to profile
-            router.push('/perfil')
+
+            // Force a hard refresh to reload server component with new data
+            router.refresh()
+
+            // Show a success message
+            setTimeout(() => {
+              window.location.reload()
+            }, 500)
           }).catch((error) => {
-            console.error('Error submitting pending questionnaire:', error)
+            console.error('[PENDING QUESTIONNAIRE] Error submitting:', error)
             // Keep data for retry
           })
         } catch (error) {
-          console.error('Error parsing pending questionnaire:', error)
+          console.error('[PENDING QUESTIONNAIRE] Error parsing pending data:', error)
           localStorage.removeItem('pendingQuestionnaire')
         }
       }

@@ -14,8 +14,8 @@ interface OutfitDetailPageProps {
 }
 
 async function getOutfitData(id: string) {
-  const supabase = createClient()
-  
+  const supabase = await createClient()
+
   // Get outfit details with related data
   const { data: outfit, error } = await supabase
     .from('outfits')
@@ -42,11 +42,11 @@ async function getOutfitData(id: string) {
 
   // Get outfit image URL - get last uploaded image from imagen_principal
   let imageUrl = '/images/placeholder-outfit.jpg'
-  
+
   try {
     const { data: files } = await supabase.storage
       .from('Outfits')
-      .list(`uploads/${outfit.id}/imagen_principal`, { 
+      .list(`uploads/${outfit.id}/imagen_principal`, {
         limit: 100,
         sortBy: { column: 'created_at', order: 'desc' }
       })

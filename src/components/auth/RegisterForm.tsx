@@ -66,29 +66,25 @@ export function RegisterForm() {
         password: data.password,
         name: data.name
       })).unwrap()
-      
+
       setShowSuccess(true)
-      
+
       // Show success notification
-      toast.success('¡Cuenta creada exitosamente!', {
-        description: 'Revisa tu email para confirmar tu cuenta antes de iniciar sesión',
-        duration: 8000,
+      toast.success('¡Bienvenido a Xianna!', {
+        description: 'Tu cuenta ha sido creada exitosamente. Redirigiendo a tu perfil...',
+        duration: 3000,
         icon: <UserCheck className="w-5 h-5 text-green-600" />,
         style: {
           background: '#4ade80',
           color: 'white',
           border: 'none'
-        },
-        action: {
-          label: 'Iniciar sesión',
-          onClick: () => router.push('/auth/login')
         }
       })
-      
-      // Redirect after showing success message
+
+      // Redirect to profile after successful registration and auto-login
       setTimeout(() => {
-        router.push('/auth/login')
-      }, 10000)
+        router.push('/perfil')
+      }, 2000)
     } catch (error) {
       console.error('Register error:', error)
     } finally {
@@ -184,7 +180,7 @@ export function RegisterForm() {
       {showSuccess && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3">
           <p className="text-green-700 text-sm">
-            ¡Cuenta creada exitosamente! Revisa tu email para confirmar tu cuenta, luego podrás iniciar sesión.
+            ¡Cuenta creada exitosamente! Redirigiendo a tu perfil...
           </p>
         </div>
       )}

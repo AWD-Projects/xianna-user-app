@@ -27,13 +27,15 @@ export function ProfileHeader({ user, profile }: ProfileHeaderProps) {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-4 mb-4">
-              <Image
-                src="/images/xianna.png"
-                alt="Xianna"
-                width={120}
-                height={36}
-                className="object-contain"
-              />
+              <Link href="/" className="cursor-pointer">
+                <Image
+                  src="/images/xianna.png"
+                  alt="Xianna"
+                  width={120}
+                  height={36}
+                  className="object-contain hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-[#E61F93] rounded-full animate-pulse" />
@@ -48,6 +50,16 @@ export function ProfileHeader({ user, profile }: ProfileHeaderProps) {
           </div>
           
           <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push('/')}
+              className="border-[#00D1ED] text-[#00D1ED] hover:bg-[#00D1ED] hover:text-white"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Inicio
+            </Button>
             <LogoutButton />
           </div>
         </div>

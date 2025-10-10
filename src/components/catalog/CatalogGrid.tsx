@@ -37,7 +37,7 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
       const hasSeenFavoritesTip = Cookies.get('xianna-favorites-tip')
       if (!hasSeenFavoritesTip) {
         const timer = setTimeout(() => {
-          toast('Haz clic en el corazón para guardar tus outfits favoritos', {
+          toast('Haz clic en el ícono de guardar para añadir tus outfits favoritos.', {
             duration: 8000,
             action: {
               label: <Check className="w-4 h-4" />,
@@ -102,25 +102,18 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
       {/* CTA: aparece siempre al cargar; se puede cerrar (no persiste) */}
       {showStyleCTA && (
         <div className="relative rounded-full bg-pink-50/70 border border-pink-200/60 px-4 py-2 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
-          {/* botón cerrar (solo oculta en esta vista) */}
-          <button
-            type="button"
-            aria-label="Ocultar recomendación de estilo"
-            onClick={() => setShowStyleCTA(false)}
-            className="absolute -top-2 -right-2 inline-flex h-6 w-6 items-center justify-center rounded-full border border-pink-200 bg-white text-pink-700 hover:bg-pink-50 shadow-sm"
-          >
-            <X className="h-4 w-4" />
-          </button>
 
           <div className="flex items-center gap-2">
-            <span className="text-pink-600 text-lg">🎯</span>
+            <span className="text-pink-600 text-lg">
+              <Check className="w-5 h-5" />
+            </span>
             <span className="text-sm text-pink-900/80">
               Descubre tu estilo personal ¡en 5 minutos!
             </span>
           </div>
 
           <a
-            href="/descubre-tu-estilo"
+            href="/formulario"
             className="ml-3 inline-flex items-center rounded-full bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium px-3 py-1 transition-colors"
             aria-label="Iniciar formulario para descubrir tu estilo"
           >

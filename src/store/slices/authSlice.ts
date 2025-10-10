@@ -33,79 +33,37 @@ export const loginUser = createAsyncThunk(
 export const signupUser = createAsyncThunk(
   'auth/signupUser',
   async ({ email, password, name }: { email: string; password: string; name: string }) => {
-    const supabase = createClient()
-    
-    // First, check if email already exists in our user_details table
-    try {
-      const response = await fetch(`/api/user-details?email=${encodeURIComponent(email)}`)
-      const existingUser = response.ok ? await response.json() : null
-    
-      if (existingUser) {
-        throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
-      }
-    } catch (fetchError) {
-      // If it's not a 404 error, there's a real problem
-      if (fetchError instanceof Error && !fetchError.message.includes('404')) {
-        console.error('Error checking existing user:', fetchError)
-      }
+    // Call our API route for registration (uses admin client, bypasses email confirmation)
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error al crear la cuenta');
     }
-    
-    
-    // Get the base URL for email redirect
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-    
-    const { data, error } = await supabase.auth.signUp({
+
+    // After successful registration, sign in the user automatically
+    const supabase = createClient();
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        data: {
-          full_name: name,
-        },
-        emailRedirectTo: `${baseUrl}/auth/callback`,
-      },
-    })
-    
-    if (error) {
-      // Handle specific Supabase auth errors for duplicate emails
-      if (error.message.includes('already registered') || 
-          error.message.includes('email already') || 
-          error.message.includes('User already registered') ||
-          error.status === 422) {
-        throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
-      }
-      throw error
+    });
+
+    if (signInError) {
+      throw new Error('Cuenta creada exitosamente, pero error al iniciar sesión. Intenta iniciar sesión manualmente.');
     }
-    
-    // Create user profile only if signup was successful and we have a user
-    if (data.user && data.user.id) {
-      try {
-        const profileResponse = await fetch('/api/user-details', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ correo: email, nombre: name })
-        })
-        
-        if (!profileResponse.ok) {
-          const errorData = await profileResponse.json()
-          // If profile creation fails due to duplicate email (unique constraint violation)
-          if (errorData.error && (errorData.error.includes('duplicate') || errorData.error.includes('23505'))) {
-            throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
-          }
-          throw new Error(errorData.error || 'Error creating profile')
-        }
-      } catch (profileError: any) {
-        console.error('Profile creation failed:', profileError)
-        // If profile creation fails due to duplicate email
-        if (profileError.code === '23505' || profileError.message.includes('duplicate')) {
-          throw new Error('Este email ya está registrado. Intenta iniciar sesión.')
-        }
-        throw new Error('Error al crear el perfil. Intenta nuevamente.')
-      }
-    }
-    
-    return data.user
+
+    return data.user;
   }
 )
 

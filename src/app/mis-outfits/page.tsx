@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 }
 
 async function getUserFavorites() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/auth/login')
   }
@@ -36,20 +36,20 @@ async function getUserFavorites() {
 
   // Transform the data and fetch images
   const favorites = []
-  
+
   for (const favorite of rawFavorites || []) {
     if (!favorite.outfits) continue
-    
+
     // Type assertion for the outfit data
     const outfit = favorite.outfits as any
-    
+
     // Get outfit image from storage - get last uploaded image
     let imageUrl = '/placeholder-outfit.jpg'
-    
+
     try {
       const { data: files } = await supabase.storage
         .from('Outfits')
-        .list(`uploads/${outfit.id}/imagen_principal`, { 
+        .list(`uploads/${outfit.id}/imagen_principal`, {
           limit: 100,
           sortBy: { column: 'created_at', order: 'desc' }
         })

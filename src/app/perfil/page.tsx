@@ -11,10 +11,14 @@ export const metadata: Metadata = {
   description: 'Gestiona tu perfil y descubre tu estilo personal en Xianna',
 }
 
+// Disable caching for this page to always get fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 async function getUserData() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/auth/login')
   }

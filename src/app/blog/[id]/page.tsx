@@ -14,8 +14,8 @@ interface BlogDetailPageProps {
 }
 
 async function getBlogData(id: string) {
-  const supabase = createClient()
-  
+  const supabase = await createClient()
+
   // Get blog details with category
   const { data: blog, error } = await supabase
     .from('blogs')
@@ -45,9 +45,9 @@ async function getBlogData(id: string) {
       .from('Blogs')
       .list(`uploads/${blog.id}`, { limit: 100 })
 
-    
+
     if (files && files.length > 0) {
-      
+
       // Use the first file as main image
       if (files.length > 0) {
         const { data: mainImageData } = supabase.storage
@@ -56,7 +56,7 @@ async function getBlogData(id: string) {
         if (mainImageData?.publicUrl) {
           imageUrl = mainImageData.publicUrl
         }
-        
+
         // Use remaining files as additional images
         files.slice(1).forEach(file => {
           const { data: additionalImageData } = supabase.storage
@@ -78,8 +78,8 @@ async function getBlogData(id: string) {
     .select('calificacion', { count: 'exact' })
     .eq('blog', id)
 
-  const averageRating = ratings?.length 
-    ? ratings.reduce((sum, r) => sum + r.calificacion, 0) / ratings.length 
+  const averageRating = ratings?.length
+    ? ratings.reduce((sum, r) => sum + r.calificacion, 0) / ratings.length
     : 0
 
   

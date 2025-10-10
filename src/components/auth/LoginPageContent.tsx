@@ -33,13 +33,15 @@ export function LoginPageContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="mb-6">
-            <Image
-              src="/images/xianna.png"
-              alt="Xianna"
-              width={160}
-              height={48}
-              className="object-contain mx-auto"
-            />
+            <Link href="/" className="inline-block cursor-pointer">
+              <Image
+                src="/images/xianna.png"
+                alt="Xianna"
+                width={160}
+                height={48}
+                className="object-contain mx-auto hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Bienvenida de vuelta</h1>
           <p className="text-gray-600 mt-2">Inicia sesión en tu cuenta de Xianna</p>
