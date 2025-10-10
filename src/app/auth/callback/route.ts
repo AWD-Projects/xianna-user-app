@@ -8,11 +8,12 @@ export async function GET(req: NextRequest) {
   const type = (url.searchParams.get('type') || 'signup') as 'signup' | 'invite' | 'email_change'
 
   if (!token_hash) {
-    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
+    return NextResponse.redirect(`${url.origin}/auth/login?error=missing_token`)
   }
 
-  // Crear el response primero
-  const response = NextResponse.redirect(`${url.origin}/correo-confirmado`)
+  const cookieStore = {
+    cookies: {} as Record<string, string>
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,11 +24,8 @@ export async function GET(req: NextRequest) {
           return req.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            // Establecer en la request (para lectura inmediata)
-            req.cookies.set(name, value)
-            // Establecer en la response (para persistir)
-            response.cookies.set(name, value, options)
+          cookiesToSet.forEach(({ name, value }) => {
+            cookieStore.cookies[name] = value
           })
         },
       },
@@ -37,8 +35,20 @@ export async function GET(req: NextRequest) {
   const { error } = await supabase.auth.verifyOtp({ type, token_hash })
 
   if (error) {
-    return NextResponse.redirect(`${url.origin}/auth/login?error=auth_callback_error`)
+    console.error('Error verificando token:', error.message)
+    return NextResponse.redirect(`${url.origin}/auth/login?error=${error.message}`)
   }
+
+  // Ahora sí, crear el response con las cookies acumuladas
+  const response = NextResponse.redirect(`${url.origin}/correo-confirmado`)
+  
+  Object.entries(cookieStore.cookies).forEach(([name, value]) => {
+    response.cookies.set(name, value, {
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
+    })
+  })
 
   return response
 }
