@@ -77,22 +77,30 @@ export const fetchQuestionnaire = createAsyncThunk(
       .select(`
         id,
         pregunta,
-        respuestas(
+        respuestas!inner(
           id,
           respuesta,
           identificador,
           id_estilo,
-          id_pregunta
+          id_pregunta,
+          estilos!inner(status)
         )
       `)
+      .eq('respuestas.estilos.status', 'activo')
       .order('id')
 
     if (error) throw error
-    
+
     return data.map(question => ({
       id: question.id,
       pregunta: question.pregunta,
-      answers: question.respuestas
+      answers: question.respuestas.map((answer: any) => ({
+        id: answer.id,
+        respuesta: answer.respuesta,
+        identificador: answer.identificador,
+        id_estilo: answer.id_estilo,
+        id_pregunta: answer.id_pregunta
+      }))
     }))
   }
 )
@@ -104,6 +112,7 @@ export const fetchStyles = createAsyncThunk(
     const { data, error } = await supabase
       .from('estilos')
       .select('*')
+      .eq('status', 'activo')
       .order('id')
 
     if (error) throw error

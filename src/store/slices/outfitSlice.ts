@@ -65,11 +65,12 @@ export const fetchOutfits = createAsyncThunk(
         nombre,
         descripcion,
         id_estilo,
-        estilos(tipo),
+        estilos!inner(tipo, status),
         outfit_ocasion(
           ocasion(ocasion)
         )
       `, { count: 'exact' })
+      .eq('estilos.status', 'activo')
 
     // Apply style filters
     if (styles && styles.length > 0) {
@@ -175,12 +176,13 @@ export const fetchOutfitById = createAsyncThunk(
       .from('outfits')
       .select(`
         *,
-        estilos(tipo),
+        estilos!inner(tipo, status),
         outfit_ocasion(
           ocasion(ocasion)
         )
       `)
       .eq('id', id)
+      .eq('estilos.status', 'activo')
       .single()
 
     if (error) throw error
@@ -233,6 +235,7 @@ export const fetchStyles = createAsyncThunk(
     const { data, error } = await supabase
       .from('estilos')
       .select('*')
+      .eq('status', 'activo')
       .order('tipo')
 
     if (error) throw error
