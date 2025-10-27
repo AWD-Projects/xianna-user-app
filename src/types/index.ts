@@ -55,6 +55,7 @@ export interface Outfit {
   updated_at: string
   ocasion?: string
   advisor_id?: number | null
+  advisor_nombre?: string
   estilos?: {
     id: number
     tipo: string

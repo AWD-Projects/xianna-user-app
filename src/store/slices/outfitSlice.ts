@@ -65,7 +65,9 @@ export const fetchOutfits = createAsyncThunk(
         nombre,
         descripcion,
         id_estilo,
+        advisor_id,
         estilos!inner(tipo, status),
+        advisors(nombre),
         outfit_ocasion(
           ocasion(ocasion)
         )
@@ -143,7 +145,7 @@ export const fetchOutfits = createAsyncThunk(
 
       // Debug log to see the data structure
       console.log('Catalog outfit estilos data:', outfit.estilos)
-      
+
       outfitsWithDetails.push({
         id: outfit.id,
         nombre: outfit.nombre,
@@ -153,6 +155,8 @@ export const fetchOutfits = createAsyncThunk(
         imagen: imageUrl,
         ocasiones,
         favoritos: favoritesCount || 0,
+        advisor_id: (outfit as any).advisor_id,
+        advisor_nombre: (outfit as any).advisors?.nombre,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -177,6 +181,7 @@ export const fetchOutfitById = createAsyncThunk(
       .select(`
         *,
         estilos!inner(tipo, status),
+        advisors(nombre),
         outfit_ocasion(
           ocasion(ocasion)
         )
@@ -223,7 +228,8 @@ export const fetchOutfitById = createAsyncThunk(
       estilo: data.estilos?.[0]?.tipo || 'Sin estilo',
       imagen: imageUrl,
       ocasiones,
-      prendas: prendasData || []
+      prendas: prendasData || [],
+      advisor_nombre: (data as any).advisors?.nombre
     }
   }
 )

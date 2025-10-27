@@ -232,7 +232,7 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
 
             {(advisor || advisorLoading) && (
               <div className="flex items-start gap-2 text-sm text-gray-600">
-                <span>por</span>
+                <span>Asesor@</span>
                 {advisorLoading ? (
                   <div className="animate-pulse h-4 bg-gray-200 rounded w-20"></div>
                 ) : advisor ? (

@@ -133,12 +133,12 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
             </p>
           </div>
 
-          {/* Advisor ID (siempre visible) */}
+          {/* Advisor Name (siempre visible) */}
           <div className="mt-1">
             <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">
               <Contact className="w-3.5 h-3.5 text-gray-500" />
-              <span className="font-medium">Asesor:</span>
-              <span className="tabular-nums">{outfit.advisor_id ?? 'Anónimo'}</span>
+              <span className="font-medium">Asesor@:</span>
+              <span className="tabular-nums">{outfit.advisor_nombre ?? 'Anónimo'}</span>
             </span>
           </div>
 
