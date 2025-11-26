@@ -9,14 +9,16 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Bookmark, BookmarkCheck, Eye, Star, Contact } from 'lucide-react'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
+import { trackOutfitCardClick, trackSaveOutfitClick } from '@/lib/gtm'
 import type { Outfit } from '@/types'
 import type { AppDispatch, RootState } from '@/store'
 
 interface OutfitCardProps {
   outfit: Outfit
+  position: number
 }
 
-export function OutfitCard({ outfit }: OutfitCardProps) {
+export function OutfitCard({ outfit, position }: OutfitCardProps) {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.auth)
   const { favorites } = useSelector((state: RootState) => state.outfit)
@@ -29,6 +31,8 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
     e.preventDefault()
     e.stopPropagation()
     if (!user?.email || isToggling) return
+    const action: 'save' | 'unsave' = isFavorited ? 'unsave' : 'save'
+    trackSaveOutfitClick(outfit.id, outfit.nombre, action)
 
     setIsToggling(true)
     try {
@@ -73,7 +77,11 @@ export function OutfitCard({ outfit }: OutfitCardProps) {
       )}
 
       {/* Clickable Image Section */}
-      <Link href={`/catalogo/${outfit.id}`} className="block">
+      <Link 
+        href={`/catalogo/${outfit.id}`} 
+        className="block"
+        onClick={() => trackOutfitCardClick(outfit.id, outfit.nombre, position)}
+      >
         <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
           {/* Outfit Image */}
           {!imageError && outfit.imagen && outfit.imagen !== '/placeholder-outfit.jpg' && outfit.imagen.trim() !== '' ? (

@@ -13,6 +13,7 @@ interface PaginationProps {
   itemName?: string
   loading?: boolean
   preserveParams?: boolean
+  onPageChange?: (currentPage: number, nextPage: number) => void
 }
 
 export function Pagination({
@@ -23,12 +24,16 @@ export function Pagination({
   basePath,
   itemName = 'elementos',
   loading = false,
-  preserveParams = true
+  preserveParams = true,
+  onPageChange
 }: PaginationProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const navigateToPage = (page: number) => {
+    if (typeof onPageChange === 'function') {
+      onPageChange(currentPage, page)
+    }
     const params = preserveParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     
     if (page > 1) {

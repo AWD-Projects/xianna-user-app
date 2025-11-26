@@ -14,6 +14,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
 import { rateBlog, rateBlogAsGuest, fetchUserBlogRating } from '@/store/slices/blogSlice'
+import { trackBlogRating } from '@/lib/gtm'
 import type { RootState, AppDispatch } from '@/store'
 import type { Blog } from '@/types'
 
@@ -67,6 +68,7 @@ export function BlogDetailContent({ blog }: BlogDetailContentProps) {
   const handleRating = async (rating: number) => {
     setIsRating(true)
     setRatingError('')
+    trackBlogRating(blog.id, blog.titulo, rating, !!user)
     try {
       if (user) {
         // Authenticated user rating (allow multiple ratings)

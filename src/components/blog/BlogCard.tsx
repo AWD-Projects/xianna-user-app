@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Star, Users } from 'lucide-react'
 import { truncateText } from '@/lib/utils'
+import { trackBlogArticleClick } from '@/lib/gtm'
 import type { Blog } from '@/types'
 
 interface BlogCardProps {
   blog: Blog
+  position: number
 }
 
 const categoryColors = [
@@ -19,12 +21,15 @@ const categoryColors = [
   'bg-[#FDE12D]'
 ]
 
-export function BlogCard({ blog }: BlogCardProps) {
+export function BlogCard({ blog, position }: BlogCardProps) {
   const categoryColor = categoryColors[blog.id_categoria % categoryColors.length]
 
   return (
     <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-200">
-      <Link href={`/blog/${blog.id}`}>
+      <Link 
+        href={`/blog/${blog.id}`}
+        onClick={() => trackBlogArticleClick(blog.id, blog.titulo, blog.categoria, position)}
+      >
         <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
           <Image
             src={blog.image}

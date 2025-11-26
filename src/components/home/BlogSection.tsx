@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BookOpen, Star, Users } from 'lucide-react'
+import { trackExploreBlogClick } from '@/lib/gtm'
 
 // Mocked blog data for teaser
 const mockBlogs = [
@@ -125,7 +126,10 @@ export function BlogSection() {
 
         {/* Simple Call to Action */}
         <div className="text-center">
-          <Link href="/blog">
+          <Link 
+            href="/blog"
+            onClick={() => trackExploreBlogClick('homepage')}
+          >
             <Button className="bg-[#E61F93] hover:bg-[#E61F93]/90 text-white rounded-xl px-8 py-3 text-base font-semibold inline-flex items-center">
               Explorar Blog
               <ArrowRight className="w-5 h-5 ml-2" />

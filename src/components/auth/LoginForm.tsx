@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff } from 'lucide-react'
 import { loginUser } from '@/store/slices/authSlice'
+import { trackLogin } from '@/lib/gtm'
 import type { AppDispatch, RootState } from '@/store'
 
 const loginSchema = z.object({
@@ -38,6 +39,7 @@ export function LoginForm() {
     setIsLoading(true)
     try {
       await dispatch(loginUser(data)).unwrap()
+      trackLogin('email')
       router.push('/perfil')
     } catch (error) {
       console.error('Login error:', error)

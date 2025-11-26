@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { trackBlogFilterClick } from '@/lib/gtm'
 import type { BlogCategory } from '@/types'
 
 interface BlogFilterProps {
@@ -15,6 +16,7 @@ export function BlogFilter({ categories, selectedCategory }: BlogFilterProps) {
 
   const handleCategoryChange = (category: string) => {
     const params = new URLSearchParams(searchParams.toString())
+    trackBlogFilterClick(category)
     if (category === 'Todo') {
       params.delete('category')
     } else {

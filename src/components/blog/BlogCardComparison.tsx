@@ -15,7 +15,7 @@ export function BlogCardComparison({ blog }: BlogCardComparisonProps) {
       <div>
         <h3 className="text-lg font-semibold mb-4 text-gray-800">Original BlogCard</h3>
         <div className="max-w-sm">
-          <BlogCard blog={blog} />
+          <BlogCard blog={blog} position={1} />
         </div>
       </div>
 

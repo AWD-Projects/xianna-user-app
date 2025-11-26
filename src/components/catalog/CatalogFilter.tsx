@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { X, Loader2 } from 'lucide-react'
+import { trackCatalogFilterClick } from '@/lib/gtm'
 import type { Style, Occasion } from '@/types'
 import type { RootState } from '@/store'
 
@@ -45,6 +46,7 @@ export function CatalogFilter({
   }
 
   const toggleStyle = (style: string) => {
+    trackCatalogFilterClick('estilo', style)
     const newStyles = selectedStyles.includes(style)
       ? selectedStyles.filter(s => s !== style)
       : [...selectedStyles, style]
@@ -52,6 +54,7 @@ export function CatalogFilter({
   }
 
   const toggleOccasion = (occasion: string) => {
+    trackCatalogFilterClick('ocasion', occasion)
     const newOccasions = selectedOccasions.includes(occasion)
       ? selectedOccasions.filter(o => o !== occasion)
       : [...selectedOccasions, occasion]

@@ -12,6 +12,8 @@ import { fetchBlogs, fetchBlogCategories } from '@/store/slices/blogSlice'
 import { Check } from 'lucide-react'
 import type { AppDispatch, RootState } from '@/store'
 
+const BLOGS_PER_PAGE = 8
+
 interface BlogGridProps {
   category: string
   page: number
@@ -82,8 +84,12 @@ export function BlogGrid({ category, page }: BlogGridProps) {
       <BlogFilter categories={categories} selectedCategory={category} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {blogs.map((blog) => (
-          <BlogCard key={blog.id} blog={blog} />
+        {blogs.map((blog, index) => (
+          <BlogCard 
+            key={blog.id} 
+            blog={blog} 
+            position={(pagination.page - 1) * BLOGS_PER_PAGE + index + 1}
+          />
         ))}
       </div>
 

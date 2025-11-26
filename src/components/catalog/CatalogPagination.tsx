@@ -2,6 +2,7 @@
 
 import { useSelector } from 'react-redux'
 import { Pagination } from '@/components/ui/pagination'
+import { trackCatalogPaginationClick } from '@/lib/gtm'
 import type { RootState } from '@/store'
 
 interface CatalogPaginationProps {
@@ -22,6 +23,7 @@ export function CatalogPagination({ currentPage, totalPages, totalOutfits }: Cat
       basePath="/catalogo"
       itemName="outfits"
       loading={loading}
+      onPageChange={(current, next) => trackCatalogPaginationClick(current, next)}
     />
   )
 }

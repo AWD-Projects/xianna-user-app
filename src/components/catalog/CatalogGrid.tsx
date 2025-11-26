@@ -12,6 +12,8 @@ import { fetchOutfits, fetchStyles, fetchOccasions } from '@/store/slices/outfit
 import { Check, X } from 'lucide-react'
 import type { AppDispatch, RootState } from '@/store'
 
+const OUTFITS_PER_PAGE = 16
+
 interface CatalogGridProps {
   styles: string[]
   occasions: string[]
@@ -123,8 +125,12 @@ export function CatalogGrid({ styles, occasions, page }: CatalogGridProps) {
       )}
 
       <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
-        {outfits.map((outfit) => (
-          <OutfitCard key={outfit.id} outfit={outfit} />
+        {outfits.map((outfit, index) => (
+          <OutfitCard 
+            key={outfit.id} 
+            outfit={outfit} 
+            position={(pagination.page - 1) * OUTFITS_PER_PAGE + index + 1}
+          />
         ))}
       </div>
 

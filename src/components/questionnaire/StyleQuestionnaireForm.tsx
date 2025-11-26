@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
@@ -11,6 +11,11 @@ import { QuestionStep } from './QuestionStep'
 import { ResultsStep } from './ResultsStep'
 import { fetchQuestionnaire, fetchStyles, submitQuestionnaire } from '@/store/slices/userSlice'
 import { createClient } from '@/lib/supabase/client'
+import { 
+  trackQuestionnaireStart, 
+  trackQuestionnaireStep, 
+  trackQuestionnaireComplete 
+} from '@/lib/gtm'
 import type { AppDispatch, RootState } from '@/store'
 
 export function StyleQuestionnaireForm() {
@@ -23,6 +28,7 @@ export function StyleQuestionnaireForm() {
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [result, setResult] = useState<any>(null)
   const [loadingUserData, setLoadingUserData] = useState(false)
+  const hasTrackedStart = useRef(false)
 
   const questionsPerStep = 1 // Show one question at a time for better focus
   const questionSteps = Math.ceil(questions.length / questionsPerStep)
@@ -33,6 +39,12 @@ export function StyleQuestionnaireForm() {
     dispatch(fetchQuestionnaire())
     dispatch(fetchStyles())
   }, [dispatch])
+
+  useEffect(() => {
+    if (hasTrackedStart.current) return
+    trackQuestionnaireStart(!!user)
+    hasTrackedStart.current = true
+  }, [user])
 
   // Auto-fill personal data for logged-in users
   useEffect(() => {
@@ -70,6 +82,7 @@ export function StyleQuestionnaireForm() {
 
   const handlePersonalDataSubmit = (data: any) => {
     setPersonalData(data)
+    trackQuestionnaireStep(Math.min(totalSteps, 2), totalSteps)
     setCurrentStep(1)
   }
 
@@ -82,7 +95,10 @@ export function StyleQuestionnaireForm() {
 
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
-      setCurrentStep(currentStep + 1)
+      const nextStep = currentStep + 1
+      const stepNumber = Math.min(totalSteps, nextStep + 1)
+      trackQuestionnaireStep(stepNumber, totalSteps)
+      setCurrentStep(nextStep)
     }
   }
 
@@ -124,13 +140,18 @@ export function StyleQuestionnaireForm() {
   }
 
   const handleSubmit = async () => {
+    const finalStepIndex = totalSteps - 1
+    const trackFinalStep = () => trackQuestionnaireStep(totalSteps, totalSteps)
     if (!user?.email) {
       // Si no hay usuario autenticado, calcular estilo temporal y mostrar resultados
       try {
         const tempResult = await calculateTemporaryStyle()
         localStorage.setItem('pendingQuestionnaire', JSON.stringify({ personalData, answers }))
         setResult(tempResult)
-        setCurrentStep(totalSteps - 1)
+        setCurrentStep(finalStepIndex)
+        trackFinalStep()
+        const styleName = styles.find(style => style.id === tempResult.tipo_estilo)?.tipo || 'desconocido'
+        trackQuestionnaireComplete(styleName, false)
       } catch (error) {
         console.error('Error calculating style:', error)
       }
@@ -145,7 +166,10 @@ export function StyleQuestionnaireForm() {
       })).unwrap()
       
       setResult(result)
-      setCurrentStep(totalSteps - 1)
+      setCurrentStep(finalStepIndex)
+      trackFinalStep()
+      const styleName = styles.find(style => style.id === result.tipo_estilo)?.tipo || 'desconocido'
+      trackQuestionnaireComplete(styleName, true)
       
       // No auto-redirect, let user stay on results page
       

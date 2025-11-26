@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, UserCheck, Mail } from 'lucide-react'
 import { signupUser } from '@/store/slices/authSlice'
 import { validateEmailForSignup } from '@/lib/auth-validation'
+import { trackRegistration } from '@/lib/gtm'
 import type { AppDispatch, RootState } from '@/store'
 
 const registerSchema = z.object({
@@ -66,6 +67,7 @@ export function RegisterForm() {
         password: data.password,
         name: data.name
       })).unwrap()
+      trackRegistration('email')
 
       setShowSuccess(true)
 

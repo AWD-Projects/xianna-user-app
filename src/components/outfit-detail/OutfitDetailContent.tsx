@@ -9,6 +9,7 @@ import { Bookmark, Share2, ShoppingBag, Sparkles, X, Mail, ExternalLink } from '
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
+import { trackSaveToFavoritesClick, trackShareOutfitClick } from '@/lib/gtm'
 import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import FacebookIcon from '@mui/icons-material/Facebook'
 import InstagramIcon from '@mui/icons-material/Instagram'
@@ -73,6 +74,8 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
       router.push('/auth/login')
       return
     }
+    const action: 'save' | 'unsave' = isFavorite ? 'unsave' : 'save'
+    trackSaveToFavoritesClick(outfit.id, outfit.nombre, action)
     setIsLoading(true)
     try {
       await dispatch(toggleFavorite({ userEmail: user.email || '', outfitId: outfit.id })).unwrap()
@@ -83,7 +86,10 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
     }
   }
 
-  const handleShare = () => setShowShareMenu(!showShareMenu)
+  const handleShare = () => {
+    trackShareOutfitClick(outfit.id, outfit.nombre, 'button')
+    setShowShareMenu(!showShareMenu)
+  }
 
   const shareToSocial = (platform: string) => {
     const link = window.location.href

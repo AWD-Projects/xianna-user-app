@@ -13,6 +13,7 @@ import {
   Sparkles as CatalogIcon,
 } from 'lucide-react';
 import * as React from 'react';
+import { trackExploreBlogClick } from '@/lib/gtm';
 
 /* ---------- UI atoms ---------- */
 
@@ -117,7 +118,10 @@ export function MainGrid(): JSX.Element {
             <Button
               variant="outline"
               className="border-white/30 text-white hover:bg-white/10 rounded-xl h-10 px-6 focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => router.push('/blog')}
+              onClick={() => {
+                trackExploreBlogClick('homepage');
+                router.push('/blog');
+              }}
             >
               Explorar blog
             </Button>
