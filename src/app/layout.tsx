@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers/Providers'
 import { Toaster } from 'sonner'
+import GoogleTagManager from '@/components/GoogleTagManager'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -61,6 +62,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID || '';
+
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
@@ -68,6 +71,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/images/x.png" />
       </head>
       <body className={inter.className}>
+        {/* Google Tag Manager */}
+        {gtmId && <GoogleTagManager gtmId={gtmId} />}
+
         <Providers>
           <div className="min-h-screen bg-gray-50">
             {children}
