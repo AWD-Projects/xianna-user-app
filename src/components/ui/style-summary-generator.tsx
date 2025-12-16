@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { UserProfile, Style } from '@/types'
 
 interface StyleSummaryGeneratorProps {
@@ -11,243 +12,389 @@ interface StyleSummaryGeneratorProps {
   className?: string
 }
 
+
 export function StyleSummaryGenerator({ profile, style, className }: StyleSummaryGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isGenerating, setIsGenerating] = useState(false)
 
   const generateSummaryImage = async () => {
     setIsGenerating(true)
-    
+
     try {
-      // Wait a moment to show loading state
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
+      await new Promise(resolve => setTimeout(resolve, 250))
+
       const canvas = canvasRef.current
       if (!canvas) return
-      
       const ctx = canvas.getContext('2d')
       if (!ctx) return
 
-      // Set canvas size optimized for Instagram Stories (9:16 ratio)
+      // Instagram Story 9:16
       canvas.width = 1080
       canvas.height = 1920
 
-      // Create elegant minimalist background
-      const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      bgGradient.addColorStop(0, '#FAFAFA')
-      bgGradient.addColorStop(0.3, '#FFFFFF')
-      bgGradient.addColorStop(0.7, '#F8FAFC')
-      bgGradient.addColorStop(1, '#F1F5F9')
-      
-      ctx.fillStyle = bgGradient
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      const W = canvas.width
+      const H = canvas.height
 
-      // Add subtle texture with very light dots
-      ctx.globalAlpha = 0.03
-      for (let i = 0; i < 50; i++) {
-        ctx.fillStyle = '#E61F93'
+      // --- Helpers ---
+      const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n))
+
+      const roundRectPath = (x: number, y: number, w: number, h: number, r: number) => {
+        const rr = Math.min(r, w / 2, h / 2)
         ctx.beginPath()
-        ctx.arc(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
-          1 + Math.random() * 2,
-          0, 2 * Math.PI
-        )
+        ctx.moveTo(x + rr, y)
+        ctx.lineTo(x + w - rr, y)
+        ctx.quadraticCurveTo(x + w, y, x + w, y + rr)
+        ctx.lineTo(x + w, y + h - rr)
+        ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h)
+        ctx.lineTo(x + rr, y + h)
+        ctx.quadraticCurveTo(x, y + h, x, y + h - rr)
+        ctx.lineTo(x, y + rr)
+        ctx.quadraticCurveTo(x, y, x + rr, y)
+        ctx.closePath()
+      }
+
+      const fillRoundedRect = (x: number, y: number, w: number, h: number, r: number, fill: string) => {
+        roundRectPath(x, y, w, h, r)
+        ctx.fillStyle = fill
         ctx.fill()
       }
-      ctx.globalAlpha = 1
 
-      // Top decorative element - thin colored line
-      ctx.fillStyle = '#E61F93'
-      ctx.fillRect(0, 0, canvas.width, 8)
+      const strokeRoundedRect = (x: number, y: number, w: number, h: number, r: number, stroke: string, lw = 1) => {
+        roundRectPath(x, y, w, h, r)
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = lw
+        ctx.stroke()
+      }
+      
+      const measureTrackingWidth = (text: string, tracking: number) => {
+        if (!text) return 0
+        let w = 0
+        for (const ch of text) w += ctx.measureText(ch).width + tracking
+        return w - tracking
+      }
+      
+      const truncateWithEllipsis = (text: string, maxWidth: number, tracking = 0) => {
+        const ell = '…'
+        const fullW = tracking ? measureTrackingWidth(text, tracking) : ctx.measureText(text).width
+        if (fullW <= maxWidth) return text
+      
+        let out = text
+        while (out.length > 1) {
+          out = out.slice(0, -1)
+          const test = out + ell
+          const w = tracking ? measureTrackingWidth(test, tracking) : ctx.measureText(test).width
+          if (w <= maxWidth) return test
+        }
+        return ell
+      }
 
-      // Load and draw the actual Xianna logo
+      // Canvas no soporta letterSpacing: hacemos tracking manual
+      const drawTextTracking = (text: string, x: number, y: number, tracking = 0) => {
+        let cursor = x
+        for (const ch of text) {
+          ctx.fillText(ch, cursor, y)
+          cursor += ctx.measureText(ch).width + tracking
+        }
+      }
+
+      const fitFontSize = (text: string, maxWidth: number, startPx: number, minPx: number) => {
+        let size = startPx
+        while (size > minPx) {
+          ctx.font = `800 ${size}px Inter, Arial, sans-serif`
+          if (ctx.measureText(text).width <= maxWidth) break
+          size -= 4
+        }
+        return size
+      }
+
+      const wrapText = (text: string, maxWidth: number) => {
+        const words = (text || '').trim().split(/\s+/)
+        const lines: string[] = []
+        let line = ''
+        for (const w of words) {
+          const test = line ? `${line} ${w}` : w
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line)
+            line = w
+          } else {
+            line = test
+          }
+        }
+        if (line) lines.push(line)
+        return lines
+      }
+
+      const drawSoftShadowText = (text: string, x: number, y: number) => {
+        ctx.save()
+        ctx.shadowColor = 'rgba(0,0,0,0.35)'
+        ctx.shadowBlur = 18
+        ctx.shadowOffsetY = 10
+        ctx.fillText(text, x, y)
+        ctx.restore()
+      }
+
+      // “Glass panel” (sin blur real, pero look glass)
+      const glassPanel = (x: number, y: number, w: number, h: number, r: number, alpha = 0.18) => {
+        // fill
+        const g = ctx.createLinearGradient(x, y, x, y + h)
+        g.addColorStop(0, `rgba(255,255,255,${alpha + 0.10})`)
+        g.addColorStop(1, `rgba(255,255,255,${alpha})`)
+        fillRoundedRect(x, y, w, h, r, g as any)
+
+        // subtle border
+        strokeRoundedRect(x, y, w, h, r, 'rgba(255,255,255,0.28)', 1)
+
+        // inner highlight line
+        ctx.globalAlpha = 0.22
+        ctx.fillStyle = '#FFFFFF'
+        roundRectPath(x + 2, y + 2, w - 4, 10, r)
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+
+      // --- Background image ---
+      const supabase = createClient()
+      const backgroundImg = new Image()
+      backgroundImg.crossOrigin = 'anonymous'
+
+      await new Promise<void>((resolve) => {
+        backgroundImg.onload = () => {
+          // cover
+          const iw = backgroundImg.width
+          const ih = backgroundImg.height
+          const scale = Math.max(W / iw, H / ih)
+          const dw = iw * scale
+          const dh = ih * scale
+          const dx = (W - dw) / 2
+          const dy = (H - dh) / 2
+          ctx.drawImage(backgroundImg, dx, dy, dw, dh)
+
+          // overlay for contrast (top a little darker)
+          const ov = ctx.createLinearGradient(0, 0, 0, H)
+          ov.addColorStop(0, 'rgba(0,0,0,0.35)')
+          ov.addColorStop(0.55, 'rgba(0,0,0,0.20)')
+          ov.addColorStop(1, 'rgba(0,0,0,0.35)')
+          ctx.fillStyle = ov
+          ctx.fillRect(0, 0, W, H)
+          resolve()
+        }
+
+        backgroundImg.onerror = () => {
+          // gradient fallback
+          const bg = ctx.createLinearGradient(0, 0, 0, H)
+          bg.addColorStop(0, '#0B1220')
+          bg.addColorStop(0.5, '#111827')
+          bg.addColorStop(1, '#0B1220')
+          ctx.fillStyle = bg
+          ctx.fillRect(0, 0, W, H)
+          resolve()
+        }
+
+        const styleName = `Estilo ${style.tipo}.jpg`
+        const { data } = supabase.storage.from('Estilos').getPublicUrl(styleName)
+        backgroundImg.src = data.publicUrl
+      })
+
+      // --- Layout constants ---
+      const safeX = 70
+      const safeTop = 80
+      const safeBottom = 90
+
+      // Accent gradient (brand)
+      const brand = ctx.createLinearGradient(0, 0, W, 0)
+      brand.addColorStop(0, '#E61F93')
+      brand.addColorStop(0.6, '#FF1493')
+      brand.addColorStop(1, '#00D1ED')
+
+      // --- Header glass bar ---
+      const headerH = 140
+      glassPanel(safeX, safeTop, W - safeX * 2, headerH, 34, 0.16)
+
+      // Accent strip inside header
+      fillRoundedRect(safeX + 18, safeTop + 18, 10, headerH - 36, 8, '#E61F93')
+
+      // Logo
       const logoImg = new Image()
       logoImg.crossOrigin = 'anonymous'
-      
-      await new Promise<void>((resolve, reject) => {
-        logoImg.onload = () => {
-          // Calculate logo dimensions (maintain aspect ratio)
-          const maxLogoWidth = 200
-          const maxLogoHeight = 120
-          const logoAspectRatio = logoImg.width / logoImg.height
-          
-          let logoWidth = maxLogoWidth
-          let logoHeight = maxLogoWidth / logoAspectRatio
-          
-          if (logoHeight > maxLogoHeight) {
-            logoHeight = maxLogoHeight
-            logoWidth = maxLogoHeight * logoAspectRatio
-          }
-          
-          // Center the logo
-          const logoX = (canvas.width - logoWidth) / 2
-          const logoY = 60
-          
-          // Draw the logo
-          ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight)
-          resolve()
-        }
-        logoImg.onerror = () => {
-          console.error('Failed to load logo, using fallback')
-          // Fallback to text-based branding
-          ctx.textAlign = 'center'
-          ctx.fillStyle = '#1F2937'
-          ctx.font = '32px Inter, Arial, sans-serif'
-          ctx.letterSpacing = '4px'
-          ctx.fillText('X I A N N A', canvas.width / 2, 120)
-          ctx.letterSpacing = '0px'
-          resolve()
-        }
-        logoImg.src = 'https://rskbayibhrapatiysrzm.supabase.co/storage/v1/object/public/xianna/xianna.png'
+      await new Promise<void>((resolve) => {
+        logoImg.onload = () => resolve()
+        logoImg.onerror = () => resolve()
+        logoImg.src =
+          'https://rskbayibhrapatiysrzm.supabase.co/storage/v1/object/public/xianna/xianna.png'
       })
 
-      // User name with elegant style
+      // Draw logo (if loaded)
+      const logoMaxW = 200
+      const logoMaxH = 128
+      if (logoImg.width && logoImg.height) {
+        const ar = logoImg.width / logoImg.height
+        let lw = logoMaxW
+        let lh = lw / ar
+        if (lh > logoMaxH) {
+          lh = logoMaxH
+          lw = lh * ar
+        }
+        ctx.drawImage(logoImg, safeX + 40, safeTop + (headerH - lh) / 2, lw, lh)
+      } else {
+        // fallback text
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = '800 34px Inter, Arial, sans-serif'
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('XIANNA', safeX + 40, safeTop + headerH / 2)
+      }
+
+      // User name (right)
+      // User name (right) — FIT + ELLIPSIS (sin que se corte)
+      const name = (profile.nombre || 'TU ESTILO').toUpperCase()
+
+      const nameRightX = W - safeX - 40
+      const nameY = safeTop + 62
+
+      // ancho disponible (desde donde termina el logo hasta el borde derecho)
+      const leftBound = safeX + 260 // ajusta si tu logo crece
+      const maxNameWidth = nameRightX - leftBound
+
+      let nameFont = 28
+      const tracking = 1.5
+
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'
+
+      // baja font hasta que quepa
+      while (nameFont > 18) {
+        ctx.font = `600 ${nameFont}px Inter, Arial, sans-serif`
+        if (measureTrackingWidth(name, tracking) <= maxNameWidth) break
+        nameFont -= 2
+      }
+
+      ctx.font = `600 ${nameFont}px Inter, Arial, sans-serif`
+      const safeName = truncateWithEllipsis(name, maxNameWidth, tracking)
+
+      // dibuja alineado al borde derecho (pero usando tracking)
+      const startX = nameRightX - measureTrackingWidth(safeName, tracking)
+      drawTextTracking(safeName, startX, nameY, tracking)
+
+
+      ctx.fillStyle = 'rgba(255,255,255,0.70)'
+      ctx.font = '500 18px Inter, Arial, sans-serif'
+      ctx.textAlign = 'right'
+      ctx.fillText('RESUMEN DE ESTILO', nameRightX, safeTop + 100)
+      // --- Main title area ---
+      const titleText = (style.tipo || '').toUpperCase()
+      const titleMaxW = W - safeX * 2 - 40
+
+      const titleY = 840
+      const titleSize = fitFontSize(titleText, titleMaxW, 148, 96)
       ctx.textAlign = 'center'
-      ctx.fillStyle = '#374151'
-      ctx.font = '38px Inter, Arial, sans-serif'
-      ctx.fillText(profile.nombre || 'Tu Estilo Personal', canvas.width / 2, 230)
+      ctx.textBaseline = 'alphabetic'
+      ctx.font = `800 ${titleSize}px Inter, Arial, sans-serif`
 
-      // Main style section
-      const centerY = canvas.height / 2 - 50
+      // Title gradient
+      const tg = ctx.createLinearGradient(W / 2, titleY - titleSize, W / 2, titleY + titleSize * 0.25)
+      tg.addColorStop(0, '#FFFFFF')
+      tg.addColorStop(0.55, '#FFE0EE')
+      tg.addColorStop(1, '#FF3AA8')
 
-      // Large style name with sophisticated typography
-      ctx.fillStyle = '#E61F93'
-      ctx.font = 'bold 96px Inter, Arial, sans-serif'
-      
-      // Add text shadow effect
-      ctx.shadowColor = 'rgba(230, 31, 147, 0.2)'
-      ctx.shadowBlur = 20
-      ctx.shadowOffsetX = 0
-      ctx.shadowOffsetY = 10
-      
-      ctx.fillText(style.tipo, canvas.width / 2, centerY)
-      
-      // Reset shadow
-      ctx.shadowColor = 'transparent'
-      ctx.shadowBlur = 0
-      ctx.shadowOffsetX = 0
-      ctx.shadowOffsetY = 0
+      ctx.fillStyle = tg as any
+      drawSoftShadowText(titleText, W / 2, titleY)
 
-      // Elegant underline
-      const textWidth = ctx.measureText(style.tipo).width
-      const lineY = centerY + 20
-      const lineGradient = ctx.createLinearGradient(
-        canvas.width / 2 - textWidth / 2, lineY,
-        canvas.width / 2 + textWidth / 2, lineY
-      )
-      lineGradient.addColorStop(0, 'rgba(230, 31, 147, 0)')
-      lineGradient.addColorStop(0.5, '#E61F93')
-      lineGradient.addColorStop(1, 'rgba(230, 31, 147, 0)')
-      
-      ctx.strokeStyle = lineGradient
-      ctx.lineWidth = 3
+      // Subtitle chip under title
+      const chipW = 340
+      const chipH = 56
+      const chipX = (W - chipW) / 2
+      const chipY = titleY + 50
+      glassPanel(chipX, chipY, chipW, chipH, 999, 0.14)
+
+      ctx.save()
+
+ctx.textAlign = 'center'
+ctx.textBaseline = 'middle'
+
+// sombra sutil para legibilidad
+ctx.shadowColor = 'rgba(0,0,0,0.35)'
+ctx.shadowBlur = 10
+ctx.shadowOffsetY = 4
+
+ctx.fillStyle = '#FFFFFF'
+ctx.font = '800 26px Inter, Arial, sans-serif' // más bold + más grande
+
+ctx.fillText('TU ESTILO', W / 2, chipY + chipH / 2)
+
+ctx.restore()
+
+
+      // --- Description “glass card” ---
+      const cardW = W - safeX * 2
+      const cardMaxH = 560
+      const cardX = safeX
+      const cardY = H - safeBottom - cardMaxH
+
+      glassPanel(cardX, cardY, cardW, cardMaxH, 46, 0.14)
+
+      // Card top gradient accent
+      const topAccent = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY)
+      topAccent.addColorStop(0, '#FF1493')
+      topAccent.addColorStop(1, '#00D1ED')
+      fillRoundedRect(cardX + 28, cardY + 22, cardW - 56, 8, 999, topAccent as any)
+
+      // Description text
+      const padding = 64
+      const textX = cardX + padding
+      const textY = cardY + 110
+      const maxTextW = cardW - padding * 2
+
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'
+      ctx.font = '500 30px Inter, Arial, sans-serif'
+
+      const lines = wrapText(style.descripcion || '', maxTextW)
+      const lineH = 44
+      const maxLines = 7
+      const finalLines = lines.slice(0, maxLines)
+
+      let yy = textY
+      for (const ln of finalLines) {
+        ctx.fillText(ln, textX, yy)
+        yy += lineH
+      }
+
+      if (lines.length > maxLines) {
+        ctx.fillStyle = 'rgba(255,255,255,0.70)'
+        ctx.font = '500 26px Inter, Arial, sans-serif'
+        ctx.fillText('…', textX, yy - 6)
+      }
+
+      // CTA footer inside card
+      const ctaBaseY = cardY + cardMaxH - 90
+      ctx.textAlign = 'left'
+      ctx.fillStyle = 'rgba(255,255,255,0.70)'
+      ctx.font = '600 18px Inter, Arial, sans-serif'
+      ctx.fillText('DESCUBRE MÁS EN', textX, ctaBaseY)
+
+      ctx.fillStyle = '#FFFFFF'
+      ctx.font = '800 34px Inter, Arial, sans-serif'
+      ctx.fillText('xianna.com.mx', textX, ctaBaseY + 44)
+
+      // Small brand dot cluster (detalle)
+      ctx.fillStyle = '#FF1493'
       ctx.beginPath()
-      ctx.moveTo(canvas.width / 2 - textWidth / 2, lineY)
-      ctx.lineTo(canvas.width / 2 + textWidth / 2, lineY)
-      ctx.stroke()
-
-      // Calculate text dimensions first to determine box height
-      ctx.fillStyle = '#4B5563'
-      ctx.font = '28px Inter, Arial, sans-serif'
-      ctx.textAlign = 'center'
-      
-      const maxWidth = canvas.width - 160
-      const lineHeight = 42
-      const words = style.descripcion.split(' ')
-      let line = ''
-      const lines: string[] = []
-
-      // Calculate how many lines we need
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' '
-        const metrics = ctx.measureText(testLine)
-        const testWidth = metrics.width
-        
-        if (testWidth > maxWidth && n > 0) {
-          lines.push(line.trim())
-          line = words[n] + ' '
-        } else {
-          line = testLine
-        }
-      }
-      if (line.trim()) {
-        lines.push(line.trim())
-      }
-
-      // Calculate dynamic box height based on content
-      const textPadding = 80 // Top and bottom padding inside the box
-      const boxHeight = (lines.length * lineHeight) + textPadding
-      const descY = centerY + 120
-      const boxPadding = 80
-      
-      // Subtle background box with dynamic height
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-      ctx.roundRect(boxPadding, descY, canvas.width - (boxPadding * 2), boxHeight, 20)
+      ctx.arc(cardX + cardW - 72, cardY + 62, 7, 0, Math.PI * 2)
       ctx.fill()
-      
-      // Box border
-      ctx.strokeStyle = 'rgba(230, 31, 147, 0.1)'
-      ctx.lineWidth = 1
-      ctx.roundRect(boxPadding, descY, canvas.width - (boxPadding * 2), boxHeight, 20)
-      ctx.stroke()
 
-      // Draw the text lines
-      ctx.fillStyle = '#4B5563'
-      ctx.font = '28px Inter, Arial, sans-serif'
-      ctx.textAlign = 'center'
-      
-      let y = descY + (textPadding / 2) + lineHeight - 10 // Start position with proper padding
-      lines.forEach(textLine => {
-        ctx.fillText(textLine, canvas.width / 2, y)
-        y += lineHeight
-      })
-
-      // Elegant decorative elements
-      // Side decorations
       ctx.fillStyle = '#00D1ED'
-      ctx.globalAlpha = 0.6
       ctx.beginPath()
-      ctx.arc(100, centerY - 200, 8, 0, 2 * Math.PI)
-      ctx.fill()
-      
-      ctx.fillStyle = '#FDE12D'
-      ctx.beginPath()
-      ctx.arc(canvas.width - 100, centerY - 150, 6, 0, 2 * Math.PI)
+      ctx.arc(cardX + cardW - 52, cardY + 62, 7, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.fillStyle = '#E61F93'
-      ctx.beginPath()
-      ctx.arc(80, centerY + 100, 5, 0, 2 * Math.PI)
-      ctx.fill()
-
-      ctx.globalAlpha = 1
-
-      // Bottom section with call to action
-      const bottomY = canvas.height - 180
-      
-      // Elegant call to action
-      ctx.fillStyle = '#6B7280'
-      ctx.font = '24px Inter, Arial, sans-serif'
-      ctx.fillText('Descubre tu estilo en', canvas.width / 2, bottomY)
-      
-      ctx.fillStyle = '#E61F93'
-      ctx.font = 'bold 28px Inter, Arial, sans-serif'
-      ctx.fillText('xianna.com.mx', canvas.width / 2, bottomY + 40)
-
-      // Bottom decorative line
-      ctx.fillStyle = '#E61F93'
-      ctx.fillRect(0, canvas.height - 8, canvas.width, 8)
-
-      // Generate image data URL and download immediately
+      // --- Export ---
       const imageDataUrl = canvas.toDataURL('image/png', 1.0)
-      
-      // Create download link and trigger download
       const link = document.createElement('a')
-      link.download = `mi-estilo-${style.tipo.toLowerCase().replace(/\s+/g, '-')}.png`
+      link.download = `mi-estilo-${(style.tipo || 'estilo').toLowerCase().replace(/\s+/g, '-')}.png`
       link.href = imageDataUrl
       link.click()
-      
     } catch (error) {
       console.error('Error generating image:', error)
     } finally {
@@ -255,27 +402,26 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
     }
   }
 
-
   return (
     <div className={className}>
-      {/* Hidden canvas for generation */}
-      <canvas 
-        ref={canvasRef} 
-        className="hidden" 
-        width={1080} 
-        height={1920}
-      />
+      <canvas ref={canvasRef} className="hidden" width={1080} height={1920} />
 
-      {/* Single action button */}
       <Button
         onClick={generateSummaryImage}
         disabled={isGenerating}
-        className="bg-gradient-to-r from-[#E61F93] to-[#00D1ED] hover:opacity-90 text-white font-semibold rounded-xl px-8 py-3 min-w-[200px]"
+        className="
+          relative overflow-hidden rounded-2xl px-8 py-3 min-w-[220px]
+          text-white font-semibold
+          bg-gradient-to-r from-[#E61F93] via-[#FF1493] to-[#00D1ED]
+          hover:opacity-95 active:scale-[0.99]
+          shadow-lg shadow-black/20
+        "
       >
+        <span className="absolute inset-0 opacity-20 bg-white/20 [mask-image:radial-gradient(60%_60%_at_30%_20%,black,transparent)]" />
         {isGenerating ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Generando...
+            Generando…
           </>
         ) : (
           <>
@@ -286,27 +432,4 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
       </Button>
     </div>
   )
-}
-
-// Helper function for rounded rectangles (if not available)
-declare global {
-  interface CanvasRenderingContext2D {
-    roundRect(x: number, y: number, width: number, height: number, radius: number): void
-  }
-}
-
-if (typeof CanvasRenderingContext2D !== 'undefined') {
-  CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-    this.beginPath()
-    this.moveTo(x + radius, y)
-    this.lineTo(x + width - radius, y)
-    this.quadraticCurveTo(x + width, y, x + width, y + radius)
-    this.lineTo(x + width, y + height - radius)
-    this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
-    this.lineTo(x + radius, y + height)
-    this.quadraticCurveTo(x, y + height, x, y + height - radius)
-    this.lineTo(x, y + radius)
-    this.quadraticCurveTo(x, y, x + radius, y)
-    this.closePath()
-  }
 }
