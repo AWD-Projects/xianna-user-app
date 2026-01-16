@@ -36,8 +36,6 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
       const H = canvas.height
 
       // --- Helpers ---
-      const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n))
-
       const roundRectPath = (x: number, y: number, w: number, h: number, r: number) => {
         const rr = Math.min(r, w / 2, h / 2)
         ctx.beginPath()
@@ -133,7 +131,7 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
         ctx.restore()
       }
 
-      // “Glass panel” (sin blur real, pero look glass)
+      // "Glass panel" (sin blur real, pero look glass)
       const glassPanel = (x: number, y: number, w: number, h: number, r: number, alpha = 0.18) => {
         // fill
         const g = ctx.createLinearGradient(x, y, x, y + h)
@@ -143,13 +141,6 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
 
         // subtle border
         strokeRoundedRect(x, y, w, h, r, 'rgba(255,255,255,0.28)', 1)
-
-        // inner highlight line
-        ctx.globalAlpha = 0.22
-        ctx.fillStyle = '#FFFFFF'
-        roundRectPath(x + 2, y + 2, w - 4, 10, r)
-        ctx.fill()
-        ctx.globalAlpha = 1
       }
 
       // --- Background image ---
@@ -291,11 +282,11 @@ export function StyleSummaryGenerator({ profile, style, className }: StyleSummar
       ctx.textBaseline = 'alphabetic'
       ctx.font = `800 ${titleSize}px Inter, Arial, sans-serif`
 
-      // Title gradient
-      const tg = ctx.createLinearGradient(W / 2, titleY - titleSize, W / 2, titleY + titleSize * 0.25)
-      tg.addColorStop(0, '#FFFFFF')
-      tg.addColorStop(0.55, '#FFE0EE')
-      tg.addColorStop(1, '#FF3AA8')
+      // Title gradient - using Xianna brand colors
+      const tg = ctx.createLinearGradient(W / 2 - titleMaxW / 2, titleY, W / 2 + titleMaxW / 2, titleY)
+      tg.addColorStop(0, '#E61F93')     // Xianna pink
+      tg.addColorStop(0.5, '#FF1493')   // Hot pink
+      tg.addColorStop(1, '#00D1ED')     // Xianna cyan
 
       ctx.fillStyle = tg as any
       drawSoftShadowText(titleText, W / 2, titleY)
@@ -347,7 +338,6 @@ ctx.restore()
 
       ctx.textAlign = 'left'
       ctx.textBaseline = 'alphabetic'
-      ctx.fillStyle = 'rgba(255,255,255,0.92)'
       ctx.font = '500 30px Inter, Arial, sans-serif'
 
       const lines = wrapText(style.descripcion || '', maxTextW)
@@ -355,11 +345,19 @@ ctx.restore()
       const maxLines = 7
       const finalLines = lines.slice(0, maxLines)
 
+      // Add shadow for better readability
+      ctx.save()
+      ctx.shadowColor = 'rgba(0,0,0,0.6)'
+      ctx.shadowBlur = 12
+      ctx.shadowOffsetY = 3
+      ctx.fillStyle = '#FFFFFF' // Pure white for better contrast
+
       let yy = textY
       for (const ln of finalLines) {
         ctx.fillText(ln, textX, yy)
         yy += lineH
       }
+      ctx.restore()
 
       if (lines.length > maxLines) {
         ctx.fillStyle = 'rgba(255,255,255,0.70)'
@@ -374,9 +372,17 @@ ctx.restore()
       ctx.font = '600 18px Inter, Arial, sans-serif'
       ctx.fillText('DESCUBRE MÁS EN', textX, ctaBaseY)
 
-      ctx.fillStyle = '#FFFFFF'
+      // Website URL with Xianna brand gradient
       ctx.font = '800 34px Inter, Arial, sans-serif'
-      ctx.fillText('xianna.com.mx', textX, ctaBaseY + 44)
+      const urlText = 'xianna.com.mx'
+      const urlWidth = ctx.measureText(urlText).width
+      const urlGradient = ctx.createLinearGradient(textX, ctaBaseY + 44, textX + urlWidth, ctaBaseY + 44)
+      urlGradient.addColorStop(0, '#E61F93')    // Xianna pink
+      urlGradient.addColorStop(0.5, '#FF1493')  // Hot pink
+      urlGradient.addColorStop(1, '#00D1ED')    // Xianna cyan
+
+      ctx.fillStyle = urlGradient as any
+      ctx.fillText(urlText, textX, ctaBaseY + 44)
 
       // Small brand dot cluster (detalle)
       ctx.fillStyle = '#FF1493'
