@@ -14,7 +14,7 @@ export default function ContactPage() {
       <div className="container mx-auto px-4 py-8">
         <ContactHeader />
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-start">
           <ContactForm />
           <ContactInfo />
         </div>

@@ -19,11 +19,11 @@ export function ContactInfo() {
             </div>
             <div>
               <h4 className="font-medium text-gray-900">Email</h4>
-              <p className="text-gray-600">hola@xianna.com.mx</p>
+              <p className="text-gray-600">xianna.mx1@gmail.com</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <Phone className="w-6 h-6 text-green-600" />
             </div>
@@ -31,7 +31,7 @@ export function ContactInfo() {
               <h4 className="font-medium text-gray-900">Teléfono</h4>
               <p className="text-gray-600">+52 55 1234 5678</p>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -78,7 +78,7 @@ export function ContactInfo() {
           </div>
           <div className="mt-4 p-4 bg-pink-50 rounded-xl">
             <p className="text-sm text-pink-800">
-              💡 <strong>Tip:</strong> Te responderemos en un máximo de 24 horas en días hábiles.
+              <strong>Tip:</strong> Te responderemos en un máximo de 24 horas en días hábiles.
             </p>
           </div>
         </CardContent>
@@ -110,7 +110,7 @@ export function ContactInfo() {
 
           <div>
             <h4 className="font-medium text-gray-900 mb-2">
-              ¿Los outfits están disponibles para compra?
+              ¿Los outfits están disponibles para venta?
             </h4>
             <p className="text-sm text-gray-600">
               Actualmente mostramos inspiración de estilo. Próximamente tendremos enlaces de compra.

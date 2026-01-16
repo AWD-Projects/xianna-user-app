@@ -57,10 +57,22 @@ export const fetchOutfits = createAsyncThunk(
     limit?: number;
   }) => {
     const supabase = createClient()
-    
-    let query = supabase
-      .from('outfits')
-      .select(`
+
+    // Build select query based on whether occasions filter is applied
+    const selectQuery = occasions && occasions.length > 0
+      ? `
+        id,
+        nombre,
+        descripcion,
+        id_estilo,
+        advisor_id,
+        estilos!inner(tipo, status),
+        advisors(nombre),
+        outfit_ocasion!inner(
+          ocasion!inner(ocasion)
+        )
+      `
+      : `
         id,
         nombre,
         descripcion,
@@ -71,28 +83,21 @@ export const fetchOutfits = createAsyncThunk(
         outfit_ocasion(
           ocasion(ocasion)
         )
-      `, { count: 'exact' })
+      `
+
+    let query = supabase
+      .from('outfits')
+      .select(selectQuery, { count: 'exact' })
       .eq('estilos.status', 'activo')
 
     // Apply style filters
     if (styles && styles.length > 0) {
-      query = query.in('id_estilo', styles.map(style => {
-        // Map style names to IDs - this is a simplified mapping
-        const styleMap: Record<string, number> = {
-          'Bohemio': 1,
-          'Casual': 2,
-          'Cómodo': 3,
-          'Formal': 4,
-          'Futurista': 5,
-          'Llamativo': 6,
-          'Rebelde': 7,
-          'Retro': 8,
-          'Romántico': 9,
-          'Urbano': 10,
-          'Versátil': 11
-        }
-        return styleMap[style] || 1
-      }))
+      query = query.in('estilos.tipo', styles)
+    }
+
+    // Apply occasion filters
+    if (occasions && occasions.length > 0) {
+      query = query.in('outfit_ocasion.ocasion.ocasion', occasions)
     }
 
     const { data, error, count } = await query
@@ -134,14 +139,6 @@ export const fetchOutfits = createAsyncThunk(
         .eq('outfit', outfit.id)
 
       const ocasiones = outfit.outfit_ocasion?.map((o: any) => o.ocasion.ocasion) || []
-
-      // Filter by occasions if specified
-      if (occasions && occasions.length > 0) {
-        const hasMatchingOccasion = ocasiones.some((ocasion: string) => 
-          occasions.includes(ocasion)
-        )
-        if (!hasMatchingOccasion) continue // Skip this outfit instead of returning null
-      }
 
       // Debug log to see the data structure
       console.log('Catalog outfit estilos data:', outfit.estilos)

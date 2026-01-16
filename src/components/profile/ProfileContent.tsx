@@ -19,6 +19,68 @@ interface ProfileContentProps {
   style: Style | null
 }
 
+// Helper function to capitalize text properly
+const capitalizeText = (text: string | null | undefined): string => {
+  if (!text) return 'No especificado'
+
+  // Special cases for specific values
+  const specialCases: Record<string, string> = {
+    'aguascalientes': 'Aguascalientes',
+    'baja-california': 'Baja California',
+    'baja-california-sur': 'Baja California Sur',
+    'campeche': 'Campeche',
+    'chiapas': 'Chiapas',
+    'chihuahua': 'Chihuahua',
+    'coahuila': 'Coahuila',
+    'colima': 'Colima',
+    'durango': 'Durango',
+    'guanajuato': 'Guanajuato',
+    'guerrero': 'Guerrero',
+    'hidalgo': 'Hidalgo',
+    'jalisco': 'Jalisco',
+    'mexico': 'Estado de México',
+    'michoacan': 'Michoacán',
+    'morelos': 'Morelos',
+    'nayarit': 'Nayarit',
+    'nuevo-leon': 'Nuevo León',
+    'oaxaca': 'Oaxaca',
+    'puebla': 'Puebla',
+    'queretaro': 'Querétaro',
+    'quintana-roo': 'Quintana Roo',
+    'san-luis-potosi': 'San Luis Potosí',
+    'sinaloa': 'Sinaloa',
+    'sonora': 'Sonora',
+    'tabasco': 'Tabasco',
+    'tamaulipas': 'Tamaulipas',
+    'tlaxcala': 'Tlaxcala',
+    'veracruz': 'Veracruz',
+    'yucatan': 'Yucatán',
+    'zacatecas': 'Zacatecas',
+    'cdmx': 'Ciudad de México',
+    'masculino': 'Masculino',
+    'femenino': 'Femenino',
+    'otro': 'Otro',
+    'estudiante': 'Estudiante',
+    'profesionista-oficina': 'Profesionista en oficina (contadora, abogada, ejecutiva)',
+    'profesionista-creativa': 'Profesionista creativa (diseñadora, fotógrafa, artista)',
+    'profesionista-salud': 'Profesionista en sector salud',
+    'profesionista-educativo': 'Profesionista en sector educativo',
+    'emprendedora': 'Dueña de negocio / Emprendedora',
+    'ama-casa': 'Ama de casa / Cuidadora'
+  }
+
+  // Check if there's a special case
+  if (specialCases[text.toLowerCase()]) {
+    return specialCases[text.toLowerCase()]
+  }
+
+  // Default: capitalize first letter of each word
+  return text
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 export function ProfileContent({ user, profile, style }: ProfileContentProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
@@ -158,7 +220,7 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
                         placeholder="Ingresa tu nombre"
                       />
                     ) : (
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.nombre || 'No especificado'}</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{capitalizeText(profile?.nombre)}</p>
                     )}
                   </div>
                   <div>
@@ -224,7 +286,7 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
                         <option value="cdmx">Ciudad de México</option>
                       </select>
                     ) : (
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.estado || 'No especificado'}</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{capitalizeText(profile?.estado)}</p>
                     )}
                   </div>
                   <div>
@@ -241,7 +303,7 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
                         <option value="otro">Otro</option>
                       </select>
                     ) : (
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.genero || 'No especificado'}</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{capitalizeText(profile?.genero)}</p>
                     )}
                   </div>
                   <div>
@@ -282,7 +344,7 @@ export function ProfileContent({ user, profile, style }: ProfileContentProps) {
                         <option value="ama-casa">Ama de casa / Cuidadora</option>
                       </select>
                     ) : (
-                      <p className="text-lg font-semibold text-gray-900 mt-1">{profile?.ocupacion || 'No especificado'}</p>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">{capitalizeText(profile?.ocupacion)}</p>
                     )}
                   </div>
                 </div>

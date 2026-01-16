@@ -16,10 +16,10 @@ const steps = [
   {
     step: 1,
     icon: ClipboardList,
-    title: "Completa el test",
+    title: "Descubre tu estilo",
     description: "Responde nuestro cuestionario sobre tus gustos, estilo de vida y características físicas.",
     details: [
-      "Solo toma 5-10 minutos",
+      "Solo toma 3 minutos",
       "Preguntas sobre tu personalidad",
       "Información sobre tu cuerpo",
       "Preferencias de color y texturas"
@@ -44,7 +44,7 @@ const steps = [
   {
     step: 3,
     icon: Sparkles,
-    title: "Descubre tu estilo",
+    title: "Tu estilo ideal",
     description: "Recibe tu perfil de estilo personalizado con outfits curados especialmente para ti.",
     details: [
       "Perfil de estilo detallado",
@@ -71,12 +71,12 @@ export function HowItWorksSection() {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            Tu estilo personal en 
+            Tu estilo personal en
             <span className="text-pink-600"> 3 simples pasos</span>
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Nuestro proceso científico y personalizado, guiado por estilistas expertos, te ayuda a descubrir el estilo 
-            que mejor se adapta a tu personalidad y estilo de vida.
+            Nuestro proceso científico y personalizado, guiado por estilistas expertos, te ayuda a descubrir el estilo
+            que mejor se adapta a tu personalidad y estilo de vida. <span className="font-semibold text-pink-600">Solo toma de 3 a 5 minutos.</span>
           </p>
         </div>
 

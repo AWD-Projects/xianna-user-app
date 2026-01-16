@@ -118,7 +118,7 @@ export function FeaturesSection() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
                 { number: "98%", label: "Satisfacción" },
-                { number: "5 mins", label: "Promedio test" },
+                { number: "3 mins", label: "Promedio test" },
                 { number: "24/7", label: "Disponible" },
                 { number: "100%", label: "Mexicano" }
               ].map((stat, index) => (

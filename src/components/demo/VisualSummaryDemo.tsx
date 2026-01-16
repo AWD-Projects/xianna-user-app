@@ -6,7 +6,7 @@ import type { UserProfile, Style } from '@/types'
 // Demo data for testing
 const demoProfile: UserProfile = {
   id: 'demo',
-  correo: 'demo@xianna.com',
+  correo: 'xianna.mx1@gmail.com',
   nombre: 'María García',
   genero: 'F',
   edad: 28,

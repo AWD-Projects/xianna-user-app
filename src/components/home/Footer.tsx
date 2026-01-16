@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Instagram, Facebook, Twitter, Mail, MapPin, Phone } from 'lucide-react'
+import { Instagram, Facebook, Mail, MapPin, Phone } from 'lucide-react'
 import Image from 'next/image'
 
 const footerLinks = {
@@ -24,8 +24,7 @@ const footerLinks = {
 const socialLinks = [
   { icon: Instagram, label: "Instagram", url: "https://instagram.com/xianna.mx" },
   { icon: Facebook, label: "Facebook", url: "https://facebook.com/xianna.mx" },
-  { icon: Twitter, label: "Twitter", url: "https://twitter.com/xianna_mx" },
-  { icon: Mail, label: "Email", url: "mailto:hola@xianna.com.mx" }
+  { icon: Mail, label: "Email", url: "mailto:xianna.mx1@gmail.com" }
 ]
 
 export function Footer() {
@@ -66,11 +65,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-[#E61F93]" />
-                <span>hola@xianna.com.mx</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-[#E61F93]" />
-                <span>+52 55 1234 5678</span>
+                <span>xianna.mx1@gmail.com</span>
               </div>
             </div>
           </div>
@@ -130,25 +125,27 @@ export function Footer() {
         {/* Newsletter Section */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="bg-gradient-to-r from-[#E61F93]/10 to-[#FDE12D]/10 rounded-2xl p-8">
-            <div className="max-w-md mx-auto text-center lg:text-left lg:max-w-none lg:flex lg:items-center lg:justify-between">
-              <div className="mb-6 lg:mb-0">
-                <h3 className="font-bold text-gray-900 mb-2 text-xl">
-                  Mantente al día con las últimas tendencias
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="mb-4">
+                <h3 className="font-bold text-gray-900 mb-3 text-xl">
+                  Newsletter Semanal y Mensual
                 </h3>
-                <p className="text-gray-600 text-sm">
-                  Recibe tips de moda, nuevos artículos y ofertas exclusivas directamente en tu email.
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Al crear tu cuenta en Xianna, automáticamente te suscribes a nuestros newsletters semanales y mensuales.
+                  Recibirás las últimas tendencias, tips de moda, nuevos artículos y ofertas exclusivas por:
                 </p>
               </div>
-              
-              <div className="flex gap-3 max-w-sm lg:max-w-xs">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#E61F93] focus:ring-2 focus:ring-[#E61F93]/20"
-                />
-                <button className="px-6 py-3 bg-[#E61F93] text-white rounded-xl font-semibold hover:bg-[#E61F93]/90 transition-all duration-300 whitespace-nowrap">
-                  Suscribirse
-                </button>
+
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-[#E61F93]" />
+                  <span>Email</span>
+                </div>
+                <span>•</span>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#E61F93]" />
+                  <span>WhatsApp</span>
+                </div>
               </div>
             </div>
           </div>
