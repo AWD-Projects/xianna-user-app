@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { Bookmark, Share2, ShoppingBag, Sparkles, X, Mail, ExternalLink } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Share2, ShoppingBag, Sparkles, X, Mail, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleFavorite } from '@/store/slices/outfitSlice'
@@ -312,7 +312,11 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
                            : 'bg-gray-100 hover:bg-[#E61F93] hover:text-white text-gray-700'
               }`}
             >
-              <Bookmark className={`w-5 h-5 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
+              {isFavorite ? (
+                <BookmarkCheck className="w-5 h-5 mr-2" />
+              ) : (
+                <Bookmark className="w-5 h-5 mr-2" />
+              )}
               {isFavorite ? 'Guardado en favoritos' : 'Guardar a favoritos'}
             </Button>
           </div>

@@ -8,7 +8,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Bookmark, Eye, Sparkles, Star } from 'lucide-react'
+import { Bookmark, BookmarkCheck, Eye, Sparkles, Star } from 'lucide-react'
 import { toggleFavorite, fetchUserFavorites } from '@/store/slices/outfitSlice'
 import type { AppDispatch, RootState } from '@/store'
 
@@ -131,20 +131,20 @@ function OutfitCard({ outfit, user, dispatch }: {
   
   return (
     <Card className="group overflow-hidden hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative">
-      {/* Heart Button Over Image - For Removing from Favorites */}
+      {/* Bookmark Button Over Image - For Removing from Favorites */}
       {user && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md bg-[#E61F93] text-white hover:bg-red-500"
+          aria-label="Quitar de guardados"
+          className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full transition-all duration-200 shadow-md bg-[#E61F93] text-white hover:bg-[#E61F93]/90"
           onClick={handleToggleFavorite}
           disabled={isToggling}
-          title="Remover de favoritos"
         >
           {isToggling ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Bookmark className="w-4 h-4 fill-current" />
+            <BookmarkCheck className="w-4 h-4" />
           )}
         </Button>
       )}
