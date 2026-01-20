@@ -32,6 +32,7 @@ interface OutfitDetailContentProps {
 export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [prendaImageErrors, setPrendaImageErrors] = useState<Set<string>>(new Set())
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [advisor, setAdvisor] = useState<Advisor | null>(null)
   const [advisorLoading, setAdvisorLoading] = useState(false)
@@ -41,6 +42,8 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
   const { user } = useSelector((state: RootState) => state.auth)
   const { favorites } = useSelector((state: RootState) => state.outfit)
   const isFavorite = favorites.includes(outfit.id)
+  const prendaHasImage = (imagen?: string | null) => Boolean(imagen && imagen.trim() !== '')
+  const getPrendaKey = (prendaId: number | undefined, index: number) => `${prendaId ?? `idx-${index}`}`
 
   useEffect(() => {
     const fetchAdvisor = async () => {
@@ -190,24 +193,49 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-900">Prendas del outfit</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {outfit.prendas.map((prenda, index) => (
-                <div key={prenda.id || index} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 mb-1">{prenda.nombre}</h4>
-                      {prenda.link && prenda.link.trim() !== '' && (
-                        <a href={prenda.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-[#E61F93] hover:text-[#E61F93]/80 transition-colors">
-                          <ShoppingBag className="w-4 h-4 mr-1" />
-                          Ver producto
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg">
-                      <ShoppingBag className="w-6 h-6 text-gray-600" />
+              {outfit.prendas.map((prenda, index) => {
+                const prendaKey = getPrendaKey(prenda.id, index)
+                const showImage = prendaHasImage(prenda.imagen) && !prendaImageErrors.has(prendaKey)
+                return (
+                  <div key={prendaKey} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300">
+                    <div className="flex items-center gap-4">
+                      <div className="relative flex items-center justify-center w-16 h-16 rounded-xl bg-gray-100 overflow-hidden">
+                        {showImage ? (
+                          <Image
+                            src={prenda.imagen as string}
+                            alt={prenda.nombre}
+                            fill
+                            className="object-cover"
+                            onError={() => {
+                              setPrendaImageErrors((prev) => {
+                                const next = new Set(prev)
+                                next.add(prendaKey)
+                                return next
+                              })
+                            }}
+                          />
+                        ) : (
+                          <ShoppingBag className="w-7 h-7 text-gray-500" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-gray-900 truncate">{prenda.nombre}</h4>
+                        {prenda.link && prenda.link.trim() !== '' && (
+                          <a
+                            href={prenda.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-[#E61F93] hover:text-[#E61F93]/80 transition-colors"
+                          >
+                            Ver producto
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -278,24 +306,49 @@ export function OutfitDetailContent({ outfit }: OutfitDetailContentProps) {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-gray-900">Prendas del outfit</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {outfit.prendas.map((prenda, index) => (
-                  <div key={prenda.id || index} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 mb-1">{prenda.nombre}</h4>
-                        {prenda.link && prenda.link.trim() !== '' && (
-                          <a href={prenda.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-[#E61F93] hover:text-[#E61F93]/80 transition-colors">
-                            <ShoppingBag className="w-4 h-4 mr-1" />
-                            Ver producto
-                          </a>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg">
-                        <ShoppingBag className="w-6 h-6 text-gray-600" />
+                {outfit.prendas.map((prenda, index) => {
+                  const prendaKey = getPrendaKey(prenda.id, index)
+                  const showImage = prendaHasImage(prenda.imagen) && !prendaImageErrors.has(prendaKey)
+                  return (
+                    <div key={prendaKey} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow duration-300">
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex items-center justify-center w-16 h-16 rounded-xl bg-gray-100 overflow-hidden">
+                          {showImage ? (
+                            <Image
+                              src={prenda.imagen as string}
+                              alt={prenda.nombre}
+                              fill
+                              className="object-cover"
+                              onError={() => {
+                                setPrendaImageErrors((prev) => {
+                                  const next = new Set(prev)
+                                  next.add(prendaKey)
+                                  return next
+                                })
+                              }}
+                            />
+                          ) : (
+                            <ShoppingBag className="w-7 h-7 text-gray-500" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-gray-900 truncate">{prenda.nombre}</h4>
+                          {prenda.link && prenda.link.trim() !== '' && (
+                            <a
+                              href={prenda.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-sm text-[#E61F93] hover:text-[#E61F93]/80 transition-colors"
+                            >
+                              Ver producto
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </div>

@@ -78,6 +78,41 @@ async function getOutfitData(id: string) {
     .eq('id_outfit', id)
     .order('id')
 
+  // Attach prenda images from storage (uploads/{id_outfit}/prendas/{id_prenda})
+  let prendasWithImages = prendasData || []
+  try {
+    const enrichedPrendas = []
+    for (const prenda of prendasWithImages) {
+      let imagen = ''
+      try {
+        const { data: prendaFiles } = await supabase.storage
+          .from('Outfits')
+          .list(`uploads/${outfit.id}/prendas/${prenda.id}`, {
+            limit: 50,
+            sortBy: { column: 'created_at', order: 'desc' }
+          })
+        if (prendaFiles && prendaFiles.length > 0) {
+          const lastFile = prendaFiles[0]
+          const { data: imageData } = supabase.storage
+            .from('Outfits')
+            .getPublicUrl(`uploads/${outfit.id}/prendas/${prenda.id}/${lastFile.name}`)
+          if (imageData?.publicUrl) {
+            imagen = imageData.publicUrl
+          }
+        }
+      } catch (error) {
+        console.warn(`Error loading image for prenda ${prenda.id}:`, error)
+      }
+      enrichedPrendas.push({
+        ...prenda,
+        imagen
+      })
+    }
+    prendasWithImages = enrichedPrendas
+  } catch (error) {
+    console.warn(`Error loading prenda images for outfit ${outfit.id}:`, error)
+  }
+
   // Process occasions data
   const ocasiones = outfit.outfit_ocasion?.map((o: any) => o.ocasion.ocasion) || []
   
@@ -89,7 +124,7 @@ async function getOutfitData(id: string) {
       estilo: outfit.estilos?.tipo || 'Sin estilo',
       ocasion: ocasiones[0] || 'Casual',
       ocasiones,
-      prendas: prendasData || []
+      prendas: prendasWithImages
     }
   }
 }
