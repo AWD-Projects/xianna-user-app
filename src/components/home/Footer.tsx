@@ -13,7 +13,8 @@ const footerLinks = {
   ],
   company: [
     { label: "Contacto", path: "/contacto" },
-    { label: "Mis Favoritos", path: "/mis-outfits" }
+    { label: "Mis Favoritos", path: "/mis-outfits" },
+    { label: "Aviso de Privacidad", path: "/aviso-de-privacidad" }
   ],
   support: [
     { label: "Test de Estilo", path: "/formulario" },
@@ -168,7 +169,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-[#E61F93] hover:text-[#E61F93]/80 font-medium transition-colors"
                 >
-                  Amoxtli Web Developers
+                  Amoxtli®
                 </a>
               </p>
             </div>

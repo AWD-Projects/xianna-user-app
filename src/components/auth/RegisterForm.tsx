@@ -14,6 +14,7 @@ import { signupUser } from '@/store/slices/authSlice'
 import { validateEmailForSignup } from '@/lib/auth-validation'
 import { trackRegistration } from '@/lib/gtm'
 import type { AppDispatch, RootState } from '@/store'
+import Link from 'next/link'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -33,6 +34,7 @@ export function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [emailValidationError, setEmailValidationError] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const { error } = useSelector((state: RootState) => state.auth)
   const router = useRouter()
@@ -173,6 +175,27 @@ export function RegisterForm() {
         )}
       </div>
 
+      <div className="flex items-start">
+        <div className="flex items-center h-5">
+          <input
+            id="terms"
+            name="terms"
+            type="checkbox"
+            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+          />
+        </div>
+        <div className="ml-3 text-sm">
+          <label htmlFor="terms" className="text-gray-700">
+            Acepto el{' '}
+            <Link href="/aviso-de-privacidad" target="_blank" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Aviso de Privacidad
+            </Link>
+          </label>
+        </div>
+      </div>
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-red-700 text-sm">{error}</p>
@@ -189,7 +212,7 @@ export function RegisterForm() {
 
       <Button 
         type="submit" 
-        disabled={isLoading || showSuccess} 
+        disabled={isLoading || showSuccess || !agreedToTerms} 
         className="w-full"
       >
         {isLoading ? 'Creando cuenta...' : showSuccess ? 'Cuenta creada' : 'Crear cuenta'}
